@@ -29,7 +29,7 @@ class AstaDAO {
         });
     }
 
-    async getAsta(astaId: number): Promise<any> {
+    async getAsta(asta_id: number): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             const sql = `
                 SELECT 
@@ -42,7 +42,7 @@ class AstaDAO {
                 GROUP BY A.id
             `;
 
-            db.get(sql, [astaId], (err: Error | null, row: any) => {
+            db.get(sql, [asta_id], (err: Error | null, row: any) => {
                 if (err) {
                     return reject(err);
                 }
@@ -63,7 +63,7 @@ class AstaDAO {
         });
     }
 
-    async getPlayers(astaId: number, role: string): Promise<any[]> {
+    async getPlayers(asta_id: number, role: string): Promise<any[]> {
         return new Promise<any[]>((resolve, reject) => {
             const sql = `
                 SELECT 
@@ -80,7 +80,7 @@ class AstaDAO {
                 WHERE P.asta_id = ? AND P.role = ?
             `;
 
-            db.all(sql, [astaId, role], (err: Error | null, rows: any[]) => {
+            db.all(sql, [asta_id, role], (err: Error | null, rows: any[]) => {
                 if (err) {
                     return reject(err);
                 }
@@ -98,6 +98,101 @@ class AstaDAO {
                 }));
 
                 resolve(players);
+            });
+        });
+    }
+
+    async createAsta(name: string, type: string, max_crediti: number) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                const sql = `
+                    INSERT INTO Aste (name, type, max_crediti)
+                    VALUES (?, ?, ?)
+                `;
+
+                db.run(sql, [name, type, max_crediti], function (err: Error | null) {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    resolve({ name, type, max_crediti });
+                });
+            }
+            catch (error: any) {
+                reject(error);
+            }
+        });
+    }
+
+    async createPlayer(asta_id: number, name: string, team: string, role: string, role_mantra: string, notes: string, taken: number) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                const sql = `
+                    INSERT INTO Players (asta_id, name, team, role, index_role, role_mantra, notes, taken)
+                    VALUES (?, ?, ?, ?, COALESCE((SELECT MAX(index_role) FROM Players WHERE role = ? AND asta_id = ?), 0) + 1, ?, ?, ?)
+                `;
+
+                db.run(sql, [asta_id, name, team, role, role, asta_id, role_mantra, notes, taken], function (err: Error | null) {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    resolve({ asta_id, name, team, role, role_mantra });
+                });
+            }
+            catch (error: any) {
+                reject(error);
+            }
+        });
+    }
+
+    async updatePlayerIndexRole(asta_id: number, player_id: number, role: string, newIndexRole: number) {
+        return new Promise<any>((resolve, reject) => {
+            const get_current_sql = `
+                SELECT
+                    (SELECT index_role FROM Players WHERE id = ?) as current_index_role,
+                    (SELECT MAX(index_role) FROM Players WHERE asta_id = ? AND role = ?) as max_index_role
+            `;
+
+            db.get(get_current_sql, [player_id, asta_id, role], (err: Error | null, row: any) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                if (!row || row.current_index_role == null) {
+                    return reject(new Error("Player not found"));
+                }
+
+                const old_index_role = row.current_index_role;
+                const max_index_role = row.max_index_role;
+                const new_index_role = Math.max(1, Math.min(newIndexRole, max_index_role));
+
+                if (new_index_role == old_index_role) {
+                    return resolve({ player_id, old_index_role, new_index_role });
+                }
+
+                db.serialize(() => {
+                    db.run("BEGIN TRANSACTION");
+
+                    if (new_index_role < old_index_role) {
+                        db.run(`UPDATE Players SET index_role = index_role + 1 WHERE index_role >= ? AND index_role < ? AND asta_id = ? AND role = ?`,
+                            [new_index_role, old_index_role, asta_id, role]
+                        );
+                    } else {
+                        db.run(`UPDATE Players SET index_role = index_role - 1 WHERE index_role > ? AND index_role <= ? AND asta_id = ? AND role = ?`,
+                            [old_index_role, new_index_role, asta_id, role]
+                        );
+                    }
+
+                    db.run(`UPDATE Players SET index_role = ? WHERE id = ?`, [new_index_role, player_id]);
+
+                    db.run("COMMIT", (err: Error | null) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve({ player_id, old_index_role, new_index_role });
+                    });
+                });
             });
         });
     }
