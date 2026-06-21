@@ -16,14 +16,9 @@ CREATE TABLE Players (
     asta_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     team TEXT NOT NULL,
-    role_classic TEXT NOT NULL,
-    role_mantra_1 TEXT NOT NULL,
-    role_mantra_2 TEXT NOT NULL,
-    role_mantra_3 TEXT NOT NULL,
-    index_classic INTEGER NOT NULL,
-    index_mantra_1 INTEGER NOT NULL,
-    index_mantra_2 INTEGER NOT NULL,
-    index_mantra_3 INTEGER NOT NULL,
+    role TEXT NOT NULL,
+    index_role INTEGER NOT NULL,
+    role_mantra TEXT NOT NULL,
     notes TEXT NOT NULL,
     taken INTEGER NOT NULL
 );

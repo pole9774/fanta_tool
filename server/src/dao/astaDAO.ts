@@ -63,7 +63,7 @@ class AstaDAO {
         });
     }
 
-    async getPlayers(astaId: number): Promise<any[]> {
+    async getPlayers(astaId: number, role: string): Promise<any[]> {
         return new Promise<any[]>((resolve, reject) => {
             const sql = `
                 SELECT 
@@ -71,21 +71,16 @@ class AstaDAO {
                     P.asta_id,
                     P.name,
                     P.team,
-                    P.role_classic,
-                    P.role_mantra_1,
-                    P.role_mantra_2,
-                    P.role_mantra_3,
-                    P.index_classic,
-                    P.index_mantra_1,
-                    P.index_mantra_2,
-                    P.index_mantra_3,
+                    P.role,
+                    P.index_role,
+                    P.role_mantra,
                     P.notes,
                     P.taken
                 FROM Players P
-                WHERE P.asta_id = ?
+                WHERE P.asta_id = ? AND P.role = ?
             `;
 
-            db.all(sql, [astaId], (err: Error | null, rows: any[]) => {
+            db.all(sql, [astaId, role], (err: Error | null, rows: any[]) => {
                 if (err) {
                     return reject(err);
                 }
@@ -95,14 +90,9 @@ class AstaDAO {
                     asta_id: row.asta_id,
                     name: row.name,
                     team: row.team,
-                    role_classic: row.role_classic,
-                    role_mantra_1: row.role_mantra_1,
-                    role_mantra_2: row.role_mantra_2,
-                    role_mantra_3: row.role_mantra_3,
-                    index_classic: row.index_classic,
-                    index_mantra_1: row.index_mantra_1,
-                    index_mantra_2: row.index_mantra_2,
-                    index_mantra_3: row.index_mantra_3,
+                    role: row.role,
+                    index_role: row.index_role,
+                    role_mantra: row.role_mantra,
                     notes: row.notes,
                     taken: row.taken
                 }));

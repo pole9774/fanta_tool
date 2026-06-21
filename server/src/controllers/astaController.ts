@@ -15,8 +15,8 @@ class AstaController {
         return this.astaDAO.getAsta(astaId);
     }
 
-    async getPlayers(astaId: number): Promise<any> {
-        return this.astaDAO.getPlayers(astaId);
+    async getPlayers(astaId: number, role: string): Promise<any> {
+        return this.astaDAO.getPlayers(astaId, role);
     }
 }
 

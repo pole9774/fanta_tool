@@ -41,11 +41,11 @@ class AstaRoutes {
             });
 
         this.router.get(
-            "/aste/:astaId/players",
+            "/aste/:astaId/players/:role",
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
-                    .getPlayers(parseInt(req.params.astaId))
+                    .getPlayers(parseInt(req.params.astaId), req.params.role)
                     .then((aste: any) => res.status(200).json(aste))
                     .catch((error: any) => next(error));
             });
