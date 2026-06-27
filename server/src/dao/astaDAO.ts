@@ -196,6 +196,98 @@ class AstaDAO {
             });
         });
     }
+
+    async createFantallenatore(asta_id: number, name: string) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                const sql = `
+                    INSERT INTO Fantallenatori (asta_id, name, crediti_spent)
+                    VALUES (?, ?, ?)
+                `;
+
+                db.run(sql, [asta_id, name, 0], function (err: Error | null) {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    resolve({ asta_id, name });
+                });
+            }
+            catch (error: any) {
+                reject(error);
+            }
+        });
+    }
+
+    async getFantallenatori(asta_id: number) {
+        return new Promise<any[]>((resolve, reject) =>  {
+            const sql = `
+                SELECT
+                    F.id,
+                    F.asta_id,
+                    F.name,
+                    F.crediti_spent
+                FROM Fantallenatori F
+                WHERE F.asta_id = ?
+            `;
+
+            db.all(sql, [asta_id], (err: Error | null, rows: any[]) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                const fantallenatori = rows.map((row) => ({
+                    id: row.id,
+                    asta_id: row.asta_id,
+                    name: row.name,
+                    crediti_spent: row.crediti_spent
+                }));
+
+                resolve(fantallenatori);
+            });
+        });
+    }
+
+    async assignPlayer(asta_id: number, player_id: number, player_name: string, fantallenatore_id: number, crediti: number) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                const insert_sql = `
+                    INSERT INTO PlayersTaken (asta_id, player_id, fantallenatore_id, crediti, index_taken)
+                    VALUES (?, ?, ?, ?, COALESCE((SELECT MAX(index_taken) FROM PlayersTaken WHERE fantallenatore_id = ?), 0) + 1)
+                `;
+
+                const mark_taken_sql = `
+                    UPDATE Players SET taken = 1
+                    WHERE name = ? AND asta_id = ?
+                `;
+
+                const update_crediti_spent_sql = `
+                    UPDATE Fantallenatori SET crediti_spent = crediti_spent + ?
+                    WHERE id = ?
+                `;
+
+                db.serialize(() => {
+                    db.run("BEGIN TRANSACTION");
+
+                    db.run(insert_sql, [asta_id, player_id, fantallenatore_id, crediti, fantallenatore_id]);
+
+                    db.run(mark_taken_sql, [player_name, asta_id]);
+
+                    db.run(update_crediti_spent_sql, [crediti, fantallenatore_id]);
+
+                    db.run("COMMIT", (err: Error | null) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve({ player_id, player_name, fantallenatore_id, crediti });
+                    });
+                });
+            }
+            catch (error: any) {
+                reject(error);
+            }
+        });
+    }
 }
 
 export default AstaDAO;

@@ -30,6 +30,18 @@ class AstaController {
     async updatePlayerIndexRole(asta_id: number, player_id: number, role: string, newIndexRole: number) {
         return this.astaDAO.updatePlayerIndexRole(asta_id, player_id, role, newIndexRole);
     }
+
+    async createFantallenatore(asta_id: number, name: string) {
+        return this.astaDAO.createFantallenatore(asta_id, name);
+    }
+
+    async getFantallenatori(asta_id: number) {
+        return this.astaDAO.getFantallenatori(asta_id);
+    }
+
+    async assignPlayer(asta_id: number, player_id: number, player_name: string, fantallenatore_id: number, crediti: number) {
+        return this.astaDAO.assignPlayer(asta_id, player_id, player_name, fantallenatore_id, crediti);
+    }
 }
 
 export default AstaController;

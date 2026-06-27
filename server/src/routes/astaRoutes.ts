@@ -36,6 +36,7 @@ class AstaRoutes {
         // Ritorna un'asta dato l'id
         this.router.get(
             "/:asta_id",
+            param("asta_id").isInt({ min: 1 }),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
@@ -45,9 +46,11 @@ class AstaRoutes {
             }
         );
 
-        // Ritorna tutti i giocatori di un dato ruolo
+        // Ritorna tutti i giocatori di un'asta di un dato ruolo
         this.router.get(
             "/:asta_id/players/:role",
+            param("asta_id").isInt({ min: 1 }),
+            param("role").notEmpty().isString(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
@@ -118,6 +121,59 @@ class AstaRoutes {
                         req.params.player_id,
                         req.body.role,
                         req.body.new_index_role,
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Aggiunge fantallenatore ad un'asta
+        this.router.post(
+            "/:asta_id/fantallenatori",
+            param("asta_id").isInt({ min: 1 }),
+            body("name").notEmpty().isString(),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .createFantallenatore(
+                        parseInt(req.params.asta_id),
+                        req.body.name
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Ritorna i fantallenatori di un'asta
+        this.router.get(
+            "/:asta_id/fantallenatori",
+            param("asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .getFantallenatori(parseInt(req.params.asta_id))
+                    .then((aste: any) => res.status(200).json(aste))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Assegna player a fantallenatore
+        this.router.post(
+            "/:asta_id/assign-player",
+            param("asta_id").isInt({ min: 1 }),
+            body("player_id").isInt({ min: 1 }),
+            body("player_name").notEmpty().isString(),
+            body("fantallenatore_id").isInt({ min: 1 }),
+            body("crediti").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .assignPlayer(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.body.player_id),
+                        req.body.player_name,
+                        parseInt(req.body.fantallenatore_id),
+                        parseInt(req.body.crediti)
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
