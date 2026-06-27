@@ -26,8 +26,7 @@ CREATE TABLE Players (
 CREATE TABLE Fantallenatori (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     asta_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    crediti_spent INTEGER NOT NULL
+    name TEXT NOT NULL
 );
 
 CREATE TABLE PlayersTaken (

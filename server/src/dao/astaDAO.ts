@@ -261,19 +261,12 @@ class AstaDAO {
                     WHERE name = ? AND asta_id = ?
                 `;
 
-                const update_crediti_spent_sql = `
-                    UPDATE Fantallenatori SET crediti_spent = crediti_spent + ?
-                    WHERE id = ?
-                `;
-
                 db.serialize(() => {
                     db.run("BEGIN TRANSACTION");
 
                     db.run(insert_sql, [asta_id, player_id, fantallenatore_id, crediti, fantallenatore_id]);
 
                     db.run(mark_taken_sql, [player_name, asta_id]);
-
-                    db.run(update_crediti_spent_sql, [crediti, fantallenatore_id]);
 
                     db.run("COMMIT", (err: Error | null) => {
                         if (err) {
@@ -286,6 +279,47 @@ class AstaDAO {
             catch (error: any) {
                 reject(error);
             }
+        });
+    }
+
+    async getPlayersTaken(asta_id: number) {
+        return new Promise<any[]>((resolve, reject) => {
+            const sql = `
+                SELECT 
+                    T.id,
+                    T.asta_id,
+                    T.player_id,
+                    T.fantallenatore_id,
+                    T.crediti,
+                    T.index_taken,
+                    P.name,
+                    P.team,
+                    P.role,
+                    P.role_mantra
+                FROM PlayersTaken T, Players P
+                WHERE T.player_id = P.id and T.asta_id = ?
+            `;
+
+            db.all(sql, [asta_id], (err: Error | null, rows: any[]) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                const players = rows.map((row) => ({
+                    id: row.id,
+                    asta_id: row.asta_id,
+                    player_id: row.player_id,
+                    fantallenatore_id: row.fantallenatore_id,
+                    crediti: row.crediti,
+                    index_taken: row.index_taken,
+                    name: row.name,
+                    team: row.team,
+                    role: row.role,
+                    role_mantra: row.role_mantra
+                }));
+
+                resolve(players);
+            });
         });
     }
 }

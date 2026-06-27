@@ -157,7 +157,7 @@ class AstaRoutes {
             }
         );
 
-        // Assegna player a fantallenatore
+        // Assegna giocatore a fantallenatore
         this.router.post(
             "/:asta_id/assign-player",
             param("asta_id").isInt({ min: 1 }),
@@ -179,6 +179,27 @@ class AstaRoutes {
                     .catch((error: any) => next(error));
             }
         );
+
+        // Ritorna i giocatori acquistati di un'asta
+        this.router.get(
+            "/:asta_id/players-taken",
+            param("asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .getPlayersTaken(
+                        parseInt(req.params.asta_id)
+                    )
+                    .then((aste: any) => res.status(200).json(aste))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Ritorna crediti spesi da un fantallenatore
+
+        // Ri-assegna un giocatore acquistato
+
+        // Aggiorna note di un giocatore
     }
 }
 
