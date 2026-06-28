@@ -224,6 +224,25 @@ class AstaRoutes {
         );
 
         // Aggiorna note di un giocatore
+        this.router.patch(
+            "/:asta_id/players/:player_id/notes",
+            param("asta_id").isInt({ min: 1 }),
+            param("player_id").isInt({ min: 1 }),
+            body("player_name").notEmpty().isString(),
+            body("notes").notEmpty().isString(),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .updateNotes(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.player_id),
+                        req.body.player_name,
+                        req.body.notes
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
     }
 }
 

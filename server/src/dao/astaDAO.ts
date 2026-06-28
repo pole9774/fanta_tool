@@ -366,6 +366,24 @@ class AstaDAO {
             });
         });
     }
+
+    async updateNotes(asta_id: number, player_id: number, player_name: string, notes: string) {
+        return new Promise<any>((resolve, reject) => {
+            const sql = `
+                UPDATE Players
+                SET notes = ?
+                WHERE asta_id = ? AND name = ?
+            `;
+
+            db.run(sql, [notes, asta_id, player_name], function (err: Error | null) {
+                if (err) {
+                    return reject(err);
+                }
+
+                resolve({ asta_id, player_id, player_name, notes });
+            });
+        });
+    }
 }
 
 export default AstaDAO;

@@ -54,6 +54,10 @@ class AstaController {
     async reassignPlayer(taken_id: number, fantallenatore_id: number) {
         return this.astaDAO.reassignPlayer(taken_id, fantallenatore_id);
     }
+
+    async updateNotes(asta_id: number, player_id: number, player_name: string, notes: string) {
+        return this.astaDAO.updateNotes(asta_id, player_id, player_name, notes);
+    }
 }
 
 export default AstaController;
