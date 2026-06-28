@@ -322,6 +322,50 @@ class AstaDAO {
             });
         });
     }
+
+    async getCreditiSpent(fantallenatore_id: number) {
+        return new Promise<any>((resolve, reject) =>  {
+            const sql = `
+                SELECT COALESCE(SUM(crediti), 0) AS crediti_spent
+                FROM PlayersTaken
+                WHERE fantallenatore_id = ?
+            `;
+
+            db.get(sql, [fantallenatore_id], (err: Error | null, row: any) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                if (!row) {
+                    return resolve(null);
+                }
+
+                const crediti_spent = {
+                    crediti_spent: row.crediti_spent
+                };
+
+                resolve(crediti_spent);
+            });
+        });
+    }
+
+    async reassignPlayer(taken_id: number, fantallenatore_id: number) {
+        return new Promise<any>((resolve, reject) => {
+            const sql = `
+                UPDATE PlayersTaken
+                SET fantallenatore_id = ?
+                WHERE id = ?
+            `;
+
+            db.run(sql, [fantallenatore_id, taken_id], function (err: Error | null) {
+                if (err) {
+                    return reject(err);
+                }
+
+                resolve({ taken_id, fantallenatore_id });
+            });
+        });
+    }
 }
 
 export default AstaDAO;

@@ -46,6 +46,14 @@ class AstaController {
     async getPlayersTaken(asta_id: number) {
         return this.astaDAO.getPlayersTaken(asta_id);
     }
+
+    async getCreditiSpent(fantallenatore_id: number) {
+        return this.astaDAO.getCreditiSpent(fantallenatore_id);
+    }
+
+    async reassignPlayer(taken_id: number, fantallenatore_id: number) {
+        return this.astaDAO.reassignPlayer(taken_id, fantallenatore_id);
+    }
 }
 
 export default AstaController;

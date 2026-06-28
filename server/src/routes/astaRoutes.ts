@@ -28,7 +28,7 @@ class AstaRoutes {
             (req: any, res: any, next: any) => {
                 this.controller
                     .getAste()
-                    .then((aste: any) => res.status(200).json(aste))
+                    .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
         );
@@ -41,7 +41,7 @@ class AstaRoutes {
             (req: any, res: any, next: any) => {
                 this.controller
                     .getAsta(parseInt(req.params.asta_id))
-                    .then((aste: any) => res.status(200).json(aste))
+                    .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
         );
@@ -55,7 +55,7 @@ class AstaRoutes {
             (req: any, res: any, next: any) => {
                 this.controller
                     .getPlayers(parseInt(req.params.asta_id), req.params.role)
-                    .then((aste: any) => res.status(200).json(aste))
+                    .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
         );
@@ -152,7 +152,7 @@ class AstaRoutes {
             (req: any, res: any, next: any) => {
                 this.controller
                     .getFantallenatori(parseInt(req.params.asta_id))
-                    .then((aste: any) => res.status(200).json(aste))
+                    .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
         );
@@ -187,17 +187,41 @@ class AstaRoutes {
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
-                    .getPlayersTaken(
-                        parseInt(req.params.asta_id)
-                    )
-                    .then((aste: any) => res.status(200).json(aste))
+                    .getPlayersTaken(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
         );
 
         // Ritorna crediti spesi da un fantallenatore
+        this.router.get(
+            "/fantallenatore/:fantallenatore_id/crediti-spent",
+            param("fantallenatore_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .getCreditiSpent(parseInt(req.params.fantallenatore_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
 
         // Ri-assegna un giocatore acquistato
+        this.router.patch(
+            "/re-assign/:taken_id/fantallenatore/:fantallenatore_id",
+            param("taken_id").isInt({ min: 1 }),
+            param("fantallenatore_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .reassignPlayer(
+                        parseInt(req.params.taken_id),
+                        parseInt(req.params.fantallenatore_id)
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
 
         // Aggiorna note di un giocatore
     }
