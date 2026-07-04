@@ -47,13 +47,13 @@ async function getPlayers(asta_id: number, role: string) {
     }
 }
 
-async function addAsta(name: string, type: string, max_crediti: number) {
+async function addAsta(name: string, type: string, max_crediti: number, n_fantallenatori: number) {
     const response = await fetch(baseURL + "asta/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, type, max_crediti }),
+        body: JSON.stringify({ name, type, max_crediti, n_fantallenatori }),
     });
 
     return response;

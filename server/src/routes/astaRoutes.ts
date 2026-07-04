@@ -66,13 +66,15 @@ class AstaRoutes {
             body("name").notEmpty().isString(),
             body("type").notEmpty().isString(),
             body("max_crediti").isInt(),
+            body("n_fantallenatori").isInt(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
                     .createAsta(
                         req.body.name,
                         req.body.type,
-                        req.body.max_crediti
+                        req.body.max_crediti,
+                        req.body.n_fantallenatori
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));

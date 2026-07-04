@@ -8,7 +8,8 @@ class AstaDAO {
                     A.id,
                     A.name,
                     A.type,
-                    A.max_crediti
+                    A.max_crediti,
+                    A.n_fantallenatori
                 FROM Aste A
             `;
 
@@ -21,7 +22,8 @@ class AstaDAO {
                     id: row.id,
                     name: row.name,
                     type: row.type,
-                    max_crediti: row.max_crediti
+                    max_crediti: row.max_crediti,
+                    n_fantallenatori: row.n_fantallenatori
                 }));
 
                 resolve(aste);
@@ -36,7 +38,8 @@ class AstaDAO {
                     A.id,
                     A.name,
                     A.type,
-                    A.max_crediti
+                    A.max_crediti,
+                    A.n_fantallenatori
                 FROM Aste A
                 WHERE A.id = ?
                 GROUP BY A.id
@@ -55,7 +58,8 @@ class AstaDAO {
                     id: row.id,
                     name: row.name,
                     type: row.type,
-                    max_crediti: row.max_crediti
+                    max_crediti: row.max_crediti,
+                    n_fantallenatori: row.n_fantallenatori
                 };
 
                 resolve(asta);
@@ -102,20 +106,20 @@ class AstaDAO {
         });
     }
 
-    async createAsta(name: string, type: string, max_crediti: number) {
+    async createAsta(name: string, type: string, max_crediti: number, n_fantallenatori: number) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const sql = `
-                    INSERT INTO Aste (name, type, max_crediti)
-                    VALUES (?, ?, ?)
+                    INSERT INTO Aste (name, type, max_crediti, n_fantallenatori)
+                    VALUES (?, ?, ?, ?)
                 `;
 
-                db.run(sql, [name, type, max_crediti], function (err: Error | null) {
+                db.run(sql, [name, type, max_crediti, n_fantallenatori], function (err: Error | null) {
                     if (err) {
                         return reject(err);
                     }
 
-                    resolve({ name, type, max_crediti });
+                    resolve({ name, type, max_crediti, n_fantallenatori });
                 });
             }
             catch (error: any) {
