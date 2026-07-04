@@ -201,11 +201,11 @@ class AstaDAO {
         return new Promise<any>((resolve, reject) => {
             try {
                 const sql = `
-                    INSERT INTO Fantallenatori (asta_id, name, crediti_spent)
-                    VALUES (?, ?, ?)
+                    INSERT INTO Fantallenatori (asta_id, name)
+                    VALUES (?, ?)
                 `;
 
-                db.run(sql, [asta_id, name, 0], function (err: Error | null) {
+                db.run(sql, [asta_id, name], function (err: Error | null) {
                     if (err) {
                         return reject(err);
                     }
@@ -225,8 +225,7 @@ class AstaDAO {
                 SELECT
                     F.id,
                     F.asta_id,
-                    F.name,
-                    F.crediti_spent
+                    F.name
                 FROM Fantallenatori F
                 WHERE F.asta_id = ?
             `;
