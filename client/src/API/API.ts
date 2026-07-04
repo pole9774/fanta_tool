@@ -34,7 +34,7 @@ async function getAsta(id: number) {
 }
 
 async function getPlayers(asta_id: number, role: string) {
-    const response = await fetch(baseURL + `asta/${asta_id}/players/${role}/`)
+    const response = await fetch(baseURL + `asta/${asta_id}/players/${role}/`);
 
     if (response.ok) {
         const players: Player[] = await response.json();

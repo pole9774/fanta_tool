@@ -4,7 +4,7 @@ class Player {
     name: string;
     team: string;
     role: string;
-    index_role: string;
+    index_role: number;
     role_mantra: string;
     notes: string;
     taken: number;
@@ -15,7 +15,7 @@ class Player {
         name: string,
         team: string,
         role: string,
-        index_role: string,
+        index_role: number,
         role_mantra: string,
         notes: string,
         taken: number
