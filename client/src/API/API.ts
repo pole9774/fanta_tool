@@ -47,13 +47,13 @@ async function getPlayers(asta_id: number, role: string) {
     }
 }
 
-async function addAsta(name: string, type: string, max_crediti: number, n_fantallenatori: number) {
+async function addAsta(name: string, type: string, n_fantallenatori: number) {
     const response = await fetch(baseURL + "asta/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, type, max_crediti, n_fantallenatori }),
+        body: JSON.stringify({ name, type, n_fantallenatori }),
     });
 
     return response;
@@ -97,13 +97,13 @@ async function updatePlayerIndex(asta_id: number, player_id: number, role: strin
     return response;
 }
 
-async function addFantallenatore(asta_id: number, name: string) {
+async function addFantallenatore(asta_id: number, name: string, max_crediti: number) {
     const response = await fetch(baseURL + `asta/${asta_id}/fantallenatori/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, max_crediti }),
     });
 
     return response;

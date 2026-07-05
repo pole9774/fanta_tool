@@ -19,8 +19,8 @@ class AstaController {
         return this.astaDAO.getPlayers(asta_id, role);
     }
 
-    async createAsta(name: string, type: string, max_crediti: number, n_fantallenatori: number) {
-        return this.astaDAO.createAsta(name, type, max_crediti, n_fantallenatori);
+    async createAsta(name: string, type: string, n_fantallenatori: number) {
+        return this.astaDAO.createAsta(name, type, n_fantallenatori);
     }
 
     async createPlayer(asta_id: number, name: string, team: string, role: string, role_mantra: string, notes: string, taken: number) {
@@ -31,8 +31,8 @@ class AstaController {
         return this.astaDAO.updatePlayerIndexRole(asta_id, player_id, role, newIndexRole);
     }
 
-    async createFantallenatore(asta_id: number, name: string) {
-        return this.astaDAO.createFantallenatore(asta_id, name);
+    async createFantallenatore(asta_id: number, name: string, max_crediti: number) {
+        return this.astaDAO.createFantallenatore(asta_id, name, max_crediti);
     }
 
     async getFantallenatori(asta_id: number) {

@@ -8,7 +8,6 @@ class AstaDAO {
                     A.id,
                     A.name,
                     A.type,
-                    A.max_crediti,
                     A.n_fantallenatori
                 FROM Aste A
             `;
@@ -22,7 +21,6 @@ class AstaDAO {
                     id: row.id,
                     name: row.name,
                     type: row.type,
-                    max_crediti: row.max_crediti,
                     n_fantallenatori: row.n_fantallenatori
                 }));
 
@@ -38,7 +36,6 @@ class AstaDAO {
                     A.id,
                     A.name,
                     A.type,
-                    A.max_crediti,
                     A.n_fantallenatori
                 FROM Aste A
                 WHERE A.id = ?
@@ -58,7 +55,6 @@ class AstaDAO {
                     id: row.id,
                     name: row.name,
                     type: row.type,
-                    max_crediti: row.max_crediti,
                     n_fantallenatori: row.n_fantallenatori
                 };
 
@@ -106,20 +102,20 @@ class AstaDAO {
         });
     }
 
-    async createAsta(name: string, type: string, max_crediti: number, n_fantallenatori: number) {
+    async createAsta(name: string, type: string, n_fantallenatori: number) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const sql = `
-                    INSERT INTO Aste (name, type, max_crediti, n_fantallenatori)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO Aste (name, type, n_fantallenatori)
+                    VALUES (?, ?, ?)
                 `;
 
-                db.run(sql, [name, type, max_crediti, n_fantallenatori], function (err: Error | null) {
+                db.run(sql, [name, type, n_fantallenatori], function (err: Error | null) {
                     if (err) {
                         return reject(err);
                     }
 
-                    resolve({ name, type, max_crediti, n_fantallenatori });
+                    resolve({ name, type, n_fantallenatori });
                 });
             }
             catch (error: any) {
@@ -201,15 +197,15 @@ class AstaDAO {
         });
     }
 
-    async createFantallenatore(asta_id: number, name: string) {
+    async createFantallenatore(asta_id: number, name: string, max_crediti: number) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const sql = `
-                    INSERT INTO Fantallenatori (asta_id, name)
-                    VALUES (?, ?)
+                    INSERT INTO Fantallenatori (asta_id, name, max_crediti)
+                    VALUES (?, ?, ?)
                 `;
 
-                db.run(sql, [asta_id, name], function (err: Error | null) {
+                db.run(sql, [asta_id, name, max_crediti], function (err: Error | null) {
                     if (err) {
                         return reject(err);
                     }
@@ -229,7 +225,8 @@ class AstaDAO {
                 SELECT
                     F.id,
                     F.asta_id,
-                    F.name
+                    F.name,
+                    F.max_crediti
                 FROM Fantallenatori F
                 WHERE F.asta_id = ?
             `;
@@ -243,7 +240,7 @@ class AstaDAO {
                     id: row.id,
                     asta_id: row.asta_id,
                     name: row.name,
-                    crediti_spent: row.crediti_spent
+                    max_crediti: row.max_crediti
                 }));
 
                 resolve(fantallenatori);

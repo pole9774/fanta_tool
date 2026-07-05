@@ -11,7 +11,6 @@ function Home(props: any) {
 
   const [nameAsta, setNameAsta] = useState<string>("");
   const [typeAsta, setTypeAsta] = useState<string>("classic");
-  const [maxCreditiAsta, setMaxCreditiAsta] = useState<number>(1000);
   const [nFantallenatoriAsta, setNFantallenatoriAsta] = useState<number>(10);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
@@ -24,13 +23,12 @@ function Home(props: any) {
     setIsCreating(true);
 
     try {
-      const response = await API.addAsta(nameAsta, typeAsta, maxCreditiAsta, nFantallenatoriAsta);
+      const response = await API.addAsta(nameAsta, typeAsta, nFantallenatoriAsta);
 
       if (response && response.ok) {
         showToast.success("Asta created successfully");
         setNameAsta("");
         setTypeAsta("classic");
-        setMaxCreditiAsta(1000);
         setDirty(true);
       } else {
         showToast.error("Failed to create the Asta");
@@ -70,7 +68,6 @@ function Home(props: any) {
               <strong>{asta.id}</strong>
               <span>Name: {asta.name}</span>
               <span>Type: {asta.type}</span>
-              <span>Max Crediti: {asta.max_crediti}</span>
               <span>N. Fantallenatori: {asta.n_fantallenatori}</span>
             </ListGroup.Item>
           ))}
@@ -114,17 +111,6 @@ function Home(props: any) {
                 value="mantra"
                 checked={typeAsta === "mantra"}
                 onChange={(e) => setTypeAsta(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="max_crediti" className="mb-3">
-              <Form.Label>Max Crediti</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="Insert max crediti"
-                step={1}
-                value={maxCreditiAsta}
-                onChange={(e) => setMaxCreditiAsta(Number(e.target.value))}
                 required
               />
             </Form.Group>

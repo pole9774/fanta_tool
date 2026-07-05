@@ -8,7 +8,6 @@ CREATE TABLE Aste (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    max_crediti INTEGER NOT NULL,
     n_fantallenatori INTEGER NOT NULL
 );
 
@@ -27,7 +26,8 @@ CREATE TABLE Players (
 CREATE TABLE Fantallenatori (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     asta_id INTEGER NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    max_crediti INTEGER NOT NULL
 );
 
 CREATE TABLE PlayersTaken (
