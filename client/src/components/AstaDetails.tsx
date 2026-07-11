@@ -119,7 +119,7 @@ function AstaDetails(props: any) {
       {
         // Player List
         (asta && players && !isTakenPage) ?
-        <PlayerList asta_id={asta_id} players={players} currentRole={currentRole} setDirty={setDirty}/>
+        <PlayerList asta_id={asta_id} players={players} currentRole={currentRole} fantallenatoriAsta={fantallenatoriAsta} setDirty={setDirty}/>
         : <></>
       }
       {

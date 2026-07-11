@@ -33,7 +33,56 @@ function SortableCard(props: any) {
             <Card.Subtitle className="mb-2 text-muted">
               Index: {props.player.index_role}
             </Card.Subtitle>
-            <Card.Text>{props.player.notes}</Card.Text>
+            {
+              props.editingPlayerId == props.player.id ?
+                <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-3">
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={props.editNotes}
+                    onChange={(e) => props.setEditNotes(e.target.value)}
+                    required
+                  />
+                </Form.Group>
+                :
+                <Card.Text>{props.player.notes}</Card.Text>
+            }
+            {
+              props.editingPlayerId == props.player.id ?
+                <>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => props.onSaveEdit(props.player.id, props.player.name)}
+                    disabled={props.isUpdating}
+                  >
+                    {props.isUpdating ? "Saving..." : "Save"}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={props.onCancelEdit}
+                  >
+                    Cancel
+                  </Button>
+                </>
+                :
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => props.onEditClick(props.player)}
+                >
+                  Edit
+                </Button>
+            }
+            {
+              props.player.taken == 0 ?
+                <Card.Text>Taken: NO</Card.Text>
+                :
+                <Card.Text>Taken: YES</Card.Text>
+            }
           </div>
           <div
             {...attributes}

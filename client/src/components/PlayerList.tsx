@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { showToast } from '../utilities/toast';
@@ -6,6 +7,46 @@ import Player from "../entities/player";
 import SortableCard from './SortableCard';
 
 function PlayerList(props: any) {
+
+  const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
+  const [editingPlayerName, setEditingPlayerName] = useState<string>("");
+  const [editNotes, setEditNotes] = useState<string>("");
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
+  const [assigningPlayerId, setAssigningPlayerId] = useState<number | null>(null);
+  const [assigningPlayerName, setAssigningPlayerName] = useState<string>("");
+  const [assignCrediti, setAssignCrediti] = useState<number>(1);
+  const [assignFantallenatoreId, setAssignFantallenatoreId] = useState<number | null>(null);
+  const [isAssigning, setIsAssigning] = useState<boolean>(false);
+
+  const handleEditClick = (player: Player) => {
+    setEditingPlayerId(player.id);
+    setEditNotes(player.notes);
+    setAssigningPlayerId(null);
+    setAssigningPlayerName("");
+    setAssignCrediti(1);
+    setAssignFantallenatoreId(null);
+  };
+
+  const handleSaveEdit = async (playerId: number, playerName: string) => {
+    setIsUpdating(true);
+
+    try {
+      const response = await API.updateNotes(Number(props.asta_id), playerId, playerName, editNotes);
+
+      if (response && response.ok) {
+        showToast.success("Player updated successfully");
+        setEditingPlayerId(null);
+        props.setDirty(true);
+      } else {
+        showToast.error("Failed to update the player");
+      }
+    } catch (error) {
+      showToast.error("Failed to update the player");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -47,6 +88,15 @@ function PlayerList(props: any) {
               <SortableCard
                 key={player.id}
                 player={player}
+                editingPlayerId={editingPlayerId}
+                editingPlayerName={editingPlayerName}
+                editNotes={editNotes}
+                isUpdating={isUpdating}
+                onEditClick={handleEditClick}
+                onSaveEdit={handleSaveEdit}
+                onCancelEdit={() => setEditingPlayerId(null)}
+                setEditingPlayerName={setEditingPlayerName}
+                setEditNotes={setEditNotes}
               />
             ))
           }
