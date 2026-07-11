@@ -1,5 +1,6 @@
 import PlayerTaken from "../entities/playerTaken";
 import Fantallenatore from '../entities/fantallenatore';
+import AddFantallenatoreForm from "./AddFantallenatoreForm";
 
 function TakenPage(props: any) {
 
@@ -17,6 +18,7 @@ function TakenPage(props: any) {
           <p key={fantallenatore.id}>{fantallenatore.name}</p>
         ))
       }
+      <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id}/>
     </>
   );
 }

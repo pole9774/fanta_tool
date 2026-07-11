@@ -15,7 +15,7 @@ function AddPlayerForm(props: any) {
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.SubmitEvent) => {
     event.preventDefault();
     setIsCreating(true);
 
