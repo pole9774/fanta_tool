@@ -2,8 +2,13 @@ import { Card, Button, Form } from "react-bootstrap";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Player from "../entities/player";
+import Fantallenatore from '../entities/fantallenatore';
 
 function SortableCard(props: any) {
+
+  function getFantallenatoreName(id: number): string | undefined {
+    return props.fantallenatoriAsta.find((f: Fantallenatore) => f.id == id)?.name;
+  }
 
   const {
     attributes,
@@ -82,6 +87,70 @@ function SortableCard(props: any) {
                 <Card.Text>Taken: NO</Card.Text>
                 :
                 <Card.Text>Taken: YES</Card.Text>
+            }
+            {
+              (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
+                <>
+                  <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-3">
+                    <Form.Select
+                      value={props.assignFantallenatoreId}
+                      onChange={(e) => props.setAssignFantallenatoreId(Number(e.target.value))}
+                    >
+                      {
+                        <>
+                          <option value={undefined}>-</option>
+                          {
+                            props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
+                              <option value={fantallenatore.id}>{getFantallenatoreName(fantallenatore.id)}</option>
+                            ))
+                          }
+                        </>
+                      }
+                    </Form.Select>
+                  </Form.Group>
+                  <Form.Group controlId={`assign-crediti-${props.player.id}`} className="mb-3">
+                    <Form.Control
+                      type="number"
+                      placeholder="Insert crediti"
+                      step={1}
+                      value={props.assignCrediti}
+                      onChange={(e) => props.setAssignCrediti(Number(e.target.value))}
+                      required
+                    />
+                  </Form.Group>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => props.onSaveAssign(props.player.id, props.player.name, props.assignFantallenatoreId, props.assignCrediti)}
+                    disabled={props.isAssigning}
+                  >
+                    {props.isAssigning ? "Saving..." : "Save"}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={props.onCancelAssign}
+                  >
+                    Cancel
+                  </Button>
+                </>
+                :
+                <>
+                  {
+                    props.player.taken == 0 ?
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => props.onAssignClick(props.player)}
+                    >
+                      Assign
+                    </Button>
+                    : <></>
+                  }
+                </>
+
             }
           </div>
           <div

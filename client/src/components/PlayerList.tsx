@@ -9,15 +9,44 @@ import SortableCard from './SortableCard';
 function PlayerList(props: any) {
 
   const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
-  const [editingPlayerName, setEditingPlayerName] = useState<string>("");
   const [editNotes, setEditNotes] = useState<string>("");
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const [assigningPlayerId, setAssigningPlayerId] = useState<number | null>(null);
   const [assigningPlayerName, setAssigningPlayerName] = useState<string>("");
   const [assignCrediti, setAssignCrediti] = useState<number>(1);
-  const [assignFantallenatoreId, setAssignFantallenatoreId] = useState<number | null>(null);
+  const [assignFantallenatoreId, setAssignFantallenatoreId] = useState<number>();
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
+
+  const handleAssignClick = (player: Player) => {
+    setAssigningPlayerId(player.id);
+    setAssigningPlayerName(player.name);
+    setEditingPlayerId(null);
+    setEditNotes("");
+  };
+
+  const handleSaveAssign = async (playerId: number, playerName: string, fantallenatoreId: number, crediti: number) => {
+    setIsAssigning(true);
+
+    try {
+      const response = await API.assignPlayer(Number(props.asta_id), playerId, playerName, fantallenatoreId, crediti);
+
+      if (response && response.ok) {
+        showToast.success("Player assigned successfully");
+        setAssigningPlayerId(null);
+        setAssigningPlayerName("");
+        setAssignFantallenatoreId(undefined);
+        setAssignCrediti(1);
+        props.setDirty(true);
+      } else {
+        showToast.error("Failed to assign the player");
+      }
+    } catch (error) {
+      showToast.error("Failed to assign the player");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   const handleEditClick = (player: Player) => {
     setEditingPlayerId(player.id);
@@ -25,7 +54,7 @@ function PlayerList(props: any) {
     setAssigningPlayerId(null);
     setAssigningPlayerName("");
     setAssignCrediti(1);
-    setAssignFantallenatoreId(null);
+    setAssignFantallenatoreId(undefined);
   };
 
   const handleSaveEdit = async (playerId: number, playerName: string) => {
@@ -89,14 +118,22 @@ function PlayerList(props: any) {
                 key={player.id}
                 player={player}
                 editingPlayerId={editingPlayerId}
-                editingPlayerName={editingPlayerName}
                 editNotes={editNotes}
                 isUpdating={isUpdating}
                 onEditClick={handleEditClick}
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={() => setEditingPlayerId(null)}
-                setEditingPlayerName={setEditingPlayerName}
                 setEditNotes={setEditNotes}
+                assigningPlayerId={assigningPlayerId}
+                assignCrediti={assignCrediti}
+                setAssignCrediti={setAssignCrediti}
+                assignFantallenatoreId={assignFantallenatoreId}
+                setAssignFantallenatoreId={setAssignFantallenatoreId}
+                isAssigning={isAssigning}
+                onAssignClick={handleAssignClick}
+                onSaveAssign={handleSaveAssign}
+                onCancelAssign={() => setAssigningPlayerId(null)}
+                fantallenatoriAsta={props.fantallenatoriAsta}
               />
             ))
           }
