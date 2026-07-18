@@ -35,6 +35,5 @@ CREATE TABLE PlayersTaken (
     asta_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     fantallenatore_id INTEGER NOT NULL,
-    crediti INTEGER NOT NULL,
-    index_taken INTEGER NOT NULL
+    crediti INTEGER NOT NULL
 );

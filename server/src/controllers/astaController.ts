@@ -47,16 +47,16 @@ class AstaController {
         return this.astaDAO.getPlayersTaken(asta_id);
     }
 
-    async getCreditiSpent(fantallenatore_id: number) {
-        return this.astaDAO.getCreditiSpent(fantallenatore_id);
-    }
-
-    async reassignPlayer(taken_id: number, fantallenatore_id: number) {
-        return this.astaDAO.reassignPlayer(taken_id, fantallenatore_id);
+    async reassignPlayer(taken_id: number, fantallenatore_id: number, crediti: number) {
+        return this.astaDAO.reassignPlayer(taken_id, fantallenatore_id, crediti);
     }
 
     async updateNotes(asta_id: number, player_id: number, player_name: string, notes: string) {
         return this.astaDAO.updateNotes(asta_id, player_id, player_name, notes);
+    }
+
+    async cancelAssign(asta_id: number, taken_id: number, taken_name: string) {
+        return this.astaDAO.cancelAssign(asta_id, taken_id, taken_name);
     }
 }
 

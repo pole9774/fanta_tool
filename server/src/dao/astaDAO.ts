@@ -226,9 +226,16 @@ class AstaDAO {
                     F.id,
                     F.asta_id,
                     F.name,
-                    F.max_crediti
+                    F.max_crediti,
+                    COALESCE(SUM(PT.crediti), 0) AS crediti_spent
                 FROM Fantallenatori F
+                LEFT JOIN PlayersTaken PT
+                    ON PT.fantallenatore_id = F.id
+                    AND PT.asta_id = F.asta_id
                 WHERE F.asta_id = ?
+                GROUP BY
+                    F.id, F.asta_id, F.name, F.max_crediti
+                ORDER BY F.id;
             `;
 
             db.all(sql, [asta_id], (err: Error | null, rows: any[]) => {
@@ -240,7 +247,8 @@ class AstaDAO {
                     id: row.id,
                     asta_id: row.asta_id,
                     name: row.name,
-                    max_crediti: row.max_crediti
+                    max_crediti: row.max_crediti,
+                    crediti_spent: row.crediti_spent
                 }));
 
                 resolve(fantallenatori);
@@ -252,8 +260,8 @@ class AstaDAO {
         return new Promise<any>((resolve, reject) => {
             try {
                 const insert_sql = `
-                    INSERT INTO PlayersTaken (asta_id, player_id, fantallenatore_id, crediti, index_taken)
-                    VALUES (?, ?, ?, ?, COALESCE((SELECT MAX(index_taken) FROM PlayersTaken WHERE fantallenatore_id = ?), 0) + 1)
+                    INSERT INTO PlayersTaken (asta_id, player_id, fantallenatore_id, crediti)
+                    VALUES (?, ?, ?, ?)
                 `;
 
                 const mark_taken_sql = `
@@ -264,7 +272,7 @@ class AstaDAO {
                 db.serialize(() => {
                     db.run("BEGIN TRANSACTION");
 
-                    db.run(insert_sql, [asta_id, player_id, fantallenatore_id, crediti, fantallenatore_id]);
+                    db.run(insert_sql, [asta_id, player_id, fantallenatore_id, crediti]);
 
                     db.run(mark_taken_sql, [player_name, asta_id]);
 
@@ -291,7 +299,6 @@ class AstaDAO {
                     T.player_id,
                     T.fantallenatore_id,
                     T.crediti,
-                    T.index_taken,
                     P.name,
                     P.team,
                     P.role,
@@ -311,7 +318,6 @@ class AstaDAO {
                     player_id: row.player_id,
                     fantallenatore_id: row.fantallenatore_id,
                     crediti: row.crediti,
-                    index_taken: row.index_taken,
                     name: row.name,
                     team: row.team,
                     role: row.role,
@@ -323,41 +329,15 @@ class AstaDAO {
         });
     }
 
-    async getCreditiSpent(fantallenatore_id: number) {
-        return new Promise<any>((resolve, reject) =>  {
-            const sql = `
-                SELECT COALESCE(SUM(crediti), 0) AS crediti_spent
-                FROM PlayersTaken
-                WHERE fantallenatore_id = ?
-            `;
-
-            db.get(sql, [fantallenatore_id], (err: Error | null, row: any) => {
-                if (err) {
-                    return reject(err);
-                }
-
-                if (!row) {
-                    return resolve(null);
-                }
-
-                const crediti_spent = {
-                    crediti_spent: row.crediti_spent
-                };
-
-                resolve(crediti_spent);
-            });
-        });
-    }
-
-    async reassignPlayer(taken_id: number, fantallenatore_id: number) {
+    async reassignPlayer(taken_id: number, fantallenatore_id: number, crediti: number) {
         return new Promise<any>((resolve, reject) => {
             const sql = `
                 UPDATE PlayersTaken
-                SET fantallenatore_id = ?
+                SET fantallenatore_id = ?, crediti = ?
                 WHERE id = ?
             `;
 
-            db.run(sql, [fantallenatore_id, taken_id], function (err: Error | null) {
+            db.run(sql, [fantallenatore_id, crediti, taken_id], function (err: Error | null) {
                 if (err) {
                     return reject(err);
                 }
@@ -381,6 +361,35 @@ class AstaDAO {
                 }
 
                 resolve({ asta_id, player_id, player_name, notes });
+            });
+        });
+    }
+
+    async cancelAssign(asta_id: number, taken_id: number, taken_name: string) {
+        return new Promise<any>((resolve, reject) => {
+            const delete_taken_sql = `
+                DELETE FROM PlayersTaken WHERE id = ?
+            `;
+
+            const update_players_sql = `
+                UPDATE Players
+                SET taken = 0
+                WHERE asta_id = ? AND name = ?
+            `;
+
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
+
+                db.run(delete_taken_sql, [taken_id]);
+
+                db.run(update_players_sql, [asta_id, taken_name]);
+
+                db.run("COMMIT", (err: Error | null) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve({ asta_id, taken_id, taken_name });
+                });
             });
         });
     }

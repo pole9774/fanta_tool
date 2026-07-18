@@ -4,7 +4,6 @@ class PlayerTaken {
     player_id: number;
     fantallenatore_id: number;
     crediti: number;
-    index_taken: number;
     name: string;
     team: string;
     role: string;
@@ -16,7 +15,6 @@ class PlayerTaken {
         player_id: number,
         fantallenatore_id: number,
         crediti: number,
-        index_taken: number,
         name: string,
         team: string,
         role: string,
@@ -27,7 +25,6 @@ class PlayerTaken {
         this.player_id = player_id;
         this.fantallenatore_id = fantallenatore_id;
         this.crediti = crediti;
-        this.index_taken = index_taken;
         this.name = name;
         this.team = team;
         this.role = role;

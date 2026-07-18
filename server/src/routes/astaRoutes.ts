@@ -195,30 +195,19 @@ class AstaRoutes {
             }
         );
 
-        // Ritorna crediti spesi da un fantallenatore
-        this.router.get(
-            "/fantallenatore/:fantallenatore_id/crediti-spent",
-            param("fantallenatore_id").isInt({ min: 1 }),
-            this.errorHandler.validateRequest,
-            (req: any, res: any, next: any) => {
-                this.controller
-                    .getCreditiSpent(parseInt(req.params.fantallenatore_id))
-                    .then((data: any) => res.status(200).json(data))
-                    .catch((error: any) => next(error));
-            }
-        );
-
         // Ri-assegna un giocatore acquistato
         this.router.patch(
             "/re-assign/:taken_id/fantallenatore/:fantallenatore_id",
             param("taken_id").isInt({ min: 1 }),
             param("fantallenatore_id").isInt({ min: 1 }),
+            body("crediti").isInt({ min: 1 }),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
                     .reassignPlayer(
                         parseInt(req.params.taken_id),
-                        parseInt(req.params.fantallenatore_id)
+                        parseInt(req.params.fantallenatore_id),
+                        req.body.crediti
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
@@ -240,6 +229,25 @@ class AstaRoutes {
                         parseInt(req.params.player_id),
                         req.body.player_name,
                         req.body.notes
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // annulla assign giocatore
+        this.router.delete(
+            "/:asta_id/cancel-assign/:taken_id",
+            param("asta_id").isInt({ min: 1 }),
+            param("taken_id").isInt({ min: 1 }),
+            body("taken_name").notEmpty().isString(),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .cancelAssign(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.taken_id),
+                        req.body.taken_name
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));

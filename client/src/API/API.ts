@@ -155,26 +155,13 @@ async function getPlayersTaken(asta_id: number) {
     }
 }
 
-async function getCreditiSpent(fantallenatore_id: number) {
-    const response = await fetch(baseURL + `asta/fantallenatore/${fantallenatore_id}/crediti-spent/`);
-
-    if (response.ok) {
-        const crediti: any = await response.json();
-        return crediti;
-    } else {
-        const errDetail = await response.json();
-        if (errDetail.error) throw errDetail.error;
-        if (errDetail.message) throw errDetail.message;
-        throw new Error("Error. Please reload the page");
-    }
-}
-
-async function reassignPlayer(taken_id: number, fantallenatore_id: number) {
+async function reassignPlayer(taken_id: number, fantallenatore_id: number, crediti: number) {
     const response = await fetch(baseURL + `asta/re-assign/${taken_id}/fantallenatore/${fantallenatore_id}/`, {
         method: "PATCH",
         headers: {
         "Content-Type": "application/json",
         },
+        body: JSON.stringify({ crediti }),
     });
 
     return response;
@@ -192,6 +179,18 @@ async function updateNotes(asta_id: number, player_id: number, player_name: stri
     return response;
 }
 
+async function cancelAssign(asta_id: number, taken_id: number, taken_name: string) {
+    const response = await fetch(baseURL + `asta/${asta_id}/cancel-assign/${taken_id}/`, {
+        method: "DELETE",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ asta_id, taken_id, taken_name }),
+    });
+
+    return response;
+}
+
 const API = {
     getAste,
     getAsta,
@@ -203,9 +202,9 @@ const API = {
     getFantallenatori,
     assignPlayer,
     getPlayersTaken,
-    getCreditiSpent,
     reassignPlayer,
-    updateNotes
+    updateNotes,
+    cancelAssign
 };
 
 export default API;
