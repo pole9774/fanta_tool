@@ -63,12 +63,13 @@ function SortableCard(props: any) {
       style={style}
       className="mb-1"
       border={getCardColor()}
+      bg={props.player.taken == 0 ? "dark" : "secondary"}
     >
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start">
           <div className="flex-grow-1">
             <Card.Title>{props.player.index_role} - {props.player.name}</Card.Title>
-            <Card.Subtitle>{props.player.team}</Card.Subtitle>
+            <Card.Subtitle>{props.player.team}, {props.asta.type == "classic" ? props.player.role : props.player.role_mantra}</Card.Subtitle>
             {
               props.editingPlayerId == props.player.id ?
                 <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-2">
@@ -104,19 +105,20 @@ function SortableCard(props: any) {
                   </Button>
                 </>
                 :
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={() => props.onEditClick(props.player)}
-                >
-                  Edit Notes
-                </Button>
-            }
-            {
-              props.player.taken == 0 ?
-                <Card.Text className="mt-2">NOT TAKEN</Card.Text>
-                :
-                <Card.Text className="mt-2">TAKEN</Card.Text>
+                <>
+                  {
+                    props.assigningPlayerId != props.player.id ?
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => props.onEditClick(props.player)}
+                      >
+                        Edit Notes
+                      </Button>
+                      : <></>
+                  }
+                </>
             }
             {
               (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
@@ -168,7 +170,7 @@ function SortableCard(props: any) {
                 :
                 <>
                   {
-                    props.player.taken == 0 ?
+                    props.player.taken == 0 && props.editingPlayerId != props.player.id ?
                       <Button
                         variant="outline-primary"
                         size="sm"

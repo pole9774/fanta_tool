@@ -105,6 +105,9 @@ function TakenPage(props: any) {
                       <Card.Title>
                         {player.name}
                       </Card.Title>
+                      <Card.Subtitle>
+                        {player.team}, {props.asta.type == "classic" ? player.role : player.role_mantra}
+                      </Card.Subtitle>
                       <Card.Text>
                         Crediti: {player.crediti}
                       </Card.Text>
