@@ -6,10 +6,6 @@ import Fantallenatore from '../entities/fantallenatore';
 
 function SortableCard(props: any) {
 
-  function getFantallenatoreName(id: number): string | undefined {
-    return props.fantallenatoriAsta.find((f: Fantallenatore) => f.id == id)?.name;
-  }
-
   const {
     attributes,
     listeners,
@@ -25,22 +21,57 @@ function SortableCard(props: any) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  type MainType = "classic" | "mantra";
+  type CardColor = "warning" | "success" | "primary" | "info" | "danger" | "secondary";
+
+  type ClassicRole = "P" | "D" | "C" | "A";
+  type MantraRole = "P" | "Dc" | "B" | "Dd" | "Ds" | "E" | "M" | "C" | "T" | "W" | "A" | "Pc";
+  type Role = ClassicRole | MantraRole;
+
+  const colorMap: Record<MainType, Partial<Record<Role, CardColor>>> = {
+    classic: {
+      P: "warning",
+      D: "success",
+      C: "primary",
+      A: "danger",
+    },
+    mantra: {
+      P: "warning",
+      Dc: "success",
+      B: "success",
+      Dd: "success",
+      Ds: "success",
+      E: "primary",
+      M: "primary",
+      C: "info",
+      T: "info",
+      W: "danger",
+      A: "danger",
+      Pc: "danger",
+    },
+  };
+
+  function getCardColor(): CardColor {
+    const type = props.asta.type as MainType;
+    const role = props.player.role as Role;
+    return colorMap[type]?.[role] ?? "secondary";
+  }
+
   return (
     <Card
       ref={setNodeRef}
       style={style}
-      className="mb-3 shadow-sm"
+      className="mb-1"
+      border={getCardColor()}
     >
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start">
           <div className="flex-grow-1">
-            <Card.Title>{props.player.name}</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">
-              Index: {props.player.index_role}
-            </Card.Subtitle>
+            <Card.Title>{props.player.index_role} - {props.player.name}</Card.Title>
+            <Card.Subtitle>{props.player.team}</Card.Subtitle>
             {
               props.editingPlayerId == props.player.id ?
-                <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-3">
+                <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-2">
                   <Form.Control
                     as="textarea"
                     rows={3}
@@ -76,17 +107,16 @@ function SortableCard(props: any) {
                 <Button
                   variant="outline-primary"
                   size="sm"
-                  className="mt-2"
                   onClick={() => props.onEditClick(props.player)}
                 >
-                  Edit
+                  Edit Notes
                 </Button>
             }
             {
               props.player.taken == 0 ?
-                <Card.Text>Taken: NO</Card.Text>
+                <Card.Text className="mt-2">NOT TAKEN</Card.Text>
                 :
-                <Card.Text>Taken: YES</Card.Text>
+                <Card.Text className="mt-2">TAKEN</Card.Text>
             }
             {
               (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
@@ -101,7 +131,7 @@ function SortableCard(props: any) {
                           <option value={undefined}>-</option>
                           {
                             props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-                              <option value={fantallenatore.id}>{getFantallenatoreName(fantallenatore.id)}</option>
+                              <option value={fantallenatore.id}>{fantallenatore.name}</option>
                             ))
                           }
                         </>
@@ -139,15 +169,14 @@ function SortableCard(props: any) {
                 <>
                   {
                     props.player.taken == 0 ?
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => props.onAssignClick(props.player)}
-                    >
-                      Assign
-                    </Button>
-                    : <></>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => props.onAssignClick(props.player)}
+                      >
+                        Assign
+                      </Button>
+                      : <></>
                   }
                 </>
 

@@ -66,9 +66,8 @@ function Home(props: any) {
               className="d-flex flex-wrap gap-2"
             >
               <strong>{asta.id}</strong>
-              <span>Name: {asta.name}</span>
-              <span>Type: {asta.type}</span>
-              <span>N. Fantallenatori: {asta.n_fantallenatori}</span>
+              <span>{asta.name}</span>
+              <span>{"("}{asta.type}, {asta.n_fantallenatori}{")"}</span>
             </ListGroup.Item>
           ))}
         </ListGroup>

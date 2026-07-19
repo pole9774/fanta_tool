@@ -60,7 +60,7 @@ function AstaDetails(props: any) {
         const pTaken = await API.getPlayersTaken(Number(asta_id));
         setPlayersTaken(pTaken);
         setDirty(false);
-      } catch(error) {
+      } catch (error) {
         showToast.error('Failed to load Players Taken');
       }
     }
@@ -84,56 +84,59 @@ function AstaDetails(props: any) {
 
   return (
     <Container className="my-5">
-      <h3>Asta ID: {asta_id}</h3>
       {
         // Info asta selezionata
         asta ?
-        <p>
-          {asta.name} - {asta.type} - n.fantallenatori: {asta.n_fantallenatori}
-        </p>
-        : <></>
+          <p>
+            {asta_id} - {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + ")"}
+          </p>
+          : <></>
       }
-      {
-        // Selezione ruolo
-        (asta && !isTakenPage) ?
-        <DisplayedRoleSelection asta={asta} currentRole={currentRole} setCurrentRole={setCurrentRole}/>
-        : <></>
-      }
-      {
-        // Bottone switch player list -> taken e viceversa
-        isTakenPage ?
-        <Button
-          variant="primary"
-          onClick={() => setIsTakenPage(false)}
-        >
-          Go to Players
-        </Button>
-        :
-        <Button
-          variant="primary"
-          onClick={() => setIsTakenPage(true)}
-        >
-          Go to Taken
-        </Button>
-      }
-      {
-        // Player List
-        (asta && players && !isTakenPage) ?
-        <PlayerList asta_id={asta_id} players={players} currentRole={currentRole} fantallenatoriAsta={fantallenatoriAsta} setDirty={setDirty}/>
-        : <></>
-      }
-      {
-        // Add Player form
-        (asta && !isTakenPage) ?
-        <AddPlayerForm asta_id={asta_id} asta={asta} setDirty={setDirty}/>
-        : <></>
-      }
-      {
-        // Pagina Taken
-        (isTakenPage && playersTaken && fantallenatoriAsta) ?
-        <TakenPage playersTaken={playersTaken} fantallenatoriAsta={fantallenatoriAsta} setDirty={setDirty} asta_id={asta_id}/>
-        : <></>
-      }
+      <div className="d-flex align-items-center gap-2">
+        {
+          // Selezione ruolo
+          (asta && !isTakenPage) ?
+            <DisplayedRoleSelection asta={asta} currentRole={currentRole} setCurrentRole={setCurrentRole} />
+            : <></>
+        }
+        {
+          // Bottone switch player list -> taken e viceversa
+          isTakenPage ?
+            <Button
+              variant="primary"
+              onClick={() => setIsTakenPage(false)}
+            >
+              Go to Players
+            </Button>
+            :
+            <Button
+              variant="primary"
+              onClick={() => setIsTakenPage(true)}
+            >
+              Go to Taken
+            </Button>
+        }
+      </div>
+      <div className="mt-3">
+        {
+          // Player List
+          (asta && players && !isTakenPage) ?
+            <PlayerList asta_id={asta_id} asta={asta} players={players} currentRole={currentRole} fantallenatoriAsta={fantallenatoriAsta} setDirty={setDirty} />
+            : <></>
+        }
+        {
+          // Add Player form
+          (asta && !isTakenPage) ?
+            <AddPlayerForm asta_id={asta_id} asta={asta} setDirty={setDirty} />
+            : <></>
+        }
+        {
+          // Pagina Taken
+          (isTakenPage && playersTaken && fantallenatoriAsta) ?
+            <TakenPage playersTaken={playersTaken} fantallenatoriAsta={fantallenatoriAsta} setDirty={setDirty} asta_id={asta_id} asta={asta} />
+            : <></>
+        }
+      </div>
     </Container>
   );
 }

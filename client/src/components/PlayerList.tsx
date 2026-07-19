@@ -116,6 +116,7 @@ function PlayerList(props: any) {
             props.players.map((player: Player) => (
               <SortableCard
                 key={player.id}
+                asta={props.asta}
                 player={player}
                 editingPlayerId={editingPlayerId}
                 editNotes={editNotes}

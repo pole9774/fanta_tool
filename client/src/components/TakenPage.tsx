@@ -54,18 +54,53 @@ function TakenPage(props: any) {
     }
   };
 
+  type MainType = "classic" | "mantra";
+  type CardColor = "warning" | "success" | "primary" | "info" | "danger" | "secondary";
+
+  type ClassicRole = "P" | "D" | "C" | "A";
+  type MantraRole = "P" | "Dc" | "B" | "Dd" | "Ds" | "E" | "M" | "C" | "T" | "W" | "A" | "Pc";
+  type Role = ClassicRole | MantraRole;
+
+  const colorMap: Record<MainType, Partial<Record<Role, CardColor>>> = {
+    classic: {
+      P: "warning",
+      D: "success",
+      C: "primary",
+      A: "danger",
+    },
+    mantra: {
+      P: "warning",
+      Dc: "success",
+      B: "success",
+      Dd: "success",
+      Ds: "success",
+      E: "primary",
+      M: "primary",
+      C: "info",
+      T: "info",
+      W: "danger",
+      A: "danger",
+      Pc: "danger",
+    },
+  };
+
+  function getCardColor(playerRole: string): CardColor {
+    const type = props.asta.type as MainType;
+    const role = playerRole as Role;
+    return colorMap[type]?.[role] ?? "secondary";
+  }
+
   return (
     <>
-      <h1>Players Taken:</h1>
       {
         props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-          <Row>
-            <h2>{fantallenatore.name}</h2>
+          <div className="mb-4">
+            <h3>{fantallenatore.name}</h3>
             <p>Max crediti: {fantallenatore.max_crediti} - Crediti spent: {fantallenatore.crediti_spent}</p>
             {
               props.playersTaken.map((player: PlayerTaken) => (
                 player.fantallenatore_id == fantallenatore.id ?
-                  <Card>
+                  <Card className="mb-1" border={getCardColor(player.role)}>
                     <Card.Body>
                       <Card.Title>
                         {player.name}
@@ -120,7 +155,7 @@ function TakenPage(props: any) {
                             <Button
                               variant="outline-primary"
                               size="sm"
-                              className="mt-2"
+                              className="me-2"
                               onClick={() => handleAssignClick(player)}
                             >
                               Reassign
@@ -128,7 +163,6 @@ function TakenPage(props: any) {
                             <Button
                               variant="outline-primary"
                               size="sm"
-                              className="mt-2"
                               onClick={() => handleCancelAssign(player)}
                             >
                               Cancel Assign
@@ -140,7 +174,7 @@ function TakenPage(props: any) {
                   : <></>
               ))
             }
-          </Row>
+          </div>
         ))
       }
       <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} />
