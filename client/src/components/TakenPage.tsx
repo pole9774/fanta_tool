@@ -40,6 +40,11 @@ function TakenPage(props: any) {
   };
 
   const handleCancelAssign = async (player: PlayerTaken) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to cancel assign for ${player.name}?`
+    );
+    if (!confirmed) return;
+
     try {
       const response = await API.cancelAssign(Number(props.asta_id), player.id, player.name);
 
@@ -147,77 +152,84 @@ function TakenPage(props: any) {
               props.playersTaken.map((player: PlayerTaken) => (
                 player.fantallenatore_id == fantallenatore.id ?
                   <Card className="mb-1" border={getCardColor(player.role)}>
-                    <Card.Body>
-                      <Card.Title>
-                        {player.name}
-                      </Card.Title>
-                      <Card.Subtitle>
-                        {player.team}, {props.asta.type == "classic" ? player.role : player.role_mantra}
-                      </Card.Subtitle>
-                      <Card.Text>
-                        Crediti: {player.crediti}
-                      </Card.Text>
-                      {
-                        player.id == assigningPlayerId ?
-                          <>
-                            <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-3">
-                              <Form.Select
-                                value={assignFantallenatoreId}
-                                onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
-                              >
-                                {
-                                  props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-                                    <option value={fantallenatore.id}>{fantallenatore.name}</option>
-                                  ))
-                                }
-                              </Form.Select>
-                            </Form.Group>
-                            <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-3">
-                              <Form.Control
-                                type="number"
-                                placeholder="Insert crediti"
-                                step={1}
-                                value={assignCrediti}
-                                onChange={(e) => setAssignCrediti(Number(e.target.value))}
-                                required
-                              />
-                            </Form.Group>
-                            <Button
-                              variant="success"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
-                              disabled={isAssigning}
-                            >
-                              {isAssigning ? "Assigning..." : "Assign"}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => setAssigningPlayerId(null)}
-                            >
-                              Cancel
-                            </Button>
-                          </>
-                          :
-                          <>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => handleAssignClick(player)}
-                            >
-                              Reassign
-                            </Button>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={() => handleCancelAssign(player)}
-                            >
-                              Cancel Assign
-                            </Button>
-                          </>
-                      }
+                    <Card.Body className="py-1 px-3">
+                      <div className="d-flex justify-content-between align-items-start gap-3">
+                        <div className="flex-grow-1">
+                          <Card.Title>
+                            {player.name}
+                          </Card.Title>
+                          <Card.Subtitle>
+                            {props.asta.type == "classic" ? player.role : player.role_mantra} | {player.team}
+                          </Card.Subtitle>
+                          <Card.Text>
+                            Crediti: {player.crediti}
+                          </Card.Text>
+                        </div>
+                        <div style={{ minWidth: 220 }} className="d-flex flex-column align-items-end">
+                          {
+                            player.id == assigningPlayerId ?
+                              <>
+                                <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-3">
+                                  <Form.Select
+                                    value={assignFantallenatoreId}
+                                    onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
+                                  >
+                                    {
+                                      props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
+                                        <option value={fantallenatore.id}>{fantallenatore.name}</option>
+                                      ))
+                                    }
+                                  </Form.Select>
+                                </Form.Group>
+                                <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-3">
+                                  <Form.Control
+                                    type="number"
+                                    placeholder="Insert crediti"
+                                    step={1}
+                                    value={assignCrediti}
+                                    onChange={(e) => setAssignCrediti(Number(e.target.value))}
+                                    required
+                                  />
+                                </Form.Group>
+                                <div className="d-flex flex-row gap-2 justify-content-end">
+                                  <Button
+                                    variant="success"
+                                    size="sm"
+                                    onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
+                                    disabled={isAssigning}
+                                  >
+                                    {isAssigning ? "Assigning..." : "Assign"}
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setAssigningPlayerId(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </>
+                              :
+                              <>
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  className="mb-1"
+                                  onClick={() => handleAssignClick(player)}
+                                >
+                                  Reassign
+                                </Button>
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  onClick={() => handleCancelAssign(player)}
+                                >
+                                  Cancel Assign
+                                </Button>
+                              </>
+                          }
+                        </div>
+                      </div>
                     </Card.Body>
                   </Card>
                   : <></>
