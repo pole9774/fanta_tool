@@ -133,13 +133,29 @@ class AstaRoutes {
             param("asta_id").isInt({ min: 1 }),
             body("name").notEmpty().isString(),
             body("max_crediti").isInt(),
+            body("classic_p").isInt(),
+            body("classic_d").isInt(),
+            body("classic_c").isInt(),
+            body("classic_a").isInt(),
+            body("mantra_por_min").isInt(),
+            body("mantra_por_max").isInt(),
+            body("mantra_mov_min").isInt(),
+            body("mantra_mov_max").isInt(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
                     .createFantallenatore(
                         parseInt(req.params.asta_id),
                         req.body.name,
-                        req.body.max_crediti
+                        req.body.max_crediti,
+                        req.body.classic_p,
+                        req.body.classic_d,
+                        req.body.classic_c,
+                        req.body.classic_a,
+                        req.body.mantra_por_min,
+                        req.body.mantra_por_max,
+                        req.body.mantra_mov_min,
+                        req.body.mantra_mov_max
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));

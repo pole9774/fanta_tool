@@ -60,9 +60,9 @@ function SortableCard(props: any) {
     },
   };
 
-  function getCardColor(): CardColor {
+  function getCardColor(playerRole: string): CardColor {
     const type = props.asta.type as MainType;
-    const role = props.player.role as Role;
+    const role = playerRole as Role;
     return colorMap[type]?.[role] ?? "secondary";
   }
 
@@ -71,21 +71,46 @@ function SortableCard(props: any) {
       ref={setNodeRef}
       style={style}
       className="mb-1"
-      border={getCardColor()}
     >
       <Card.Body className="py-1 px-3">
         <div className="d-flex align-items-start gap-3">
           <div style={{ flex: "0 0 200px" }}>
             <Card.Title className="d-flex align-items-center gap-2 fs-5 mt-1">
               <span
-                className="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
+                className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white`}
                 style={{ width: 20, height: 20, fontSize: "0.75rem" }}
               >
                 {props.player.index_role}
               </span>
               <span>{props.player.name}</span>
             </Card.Title>
-            <Card.Subtitle className="fs-6">{props.asta.type == "classic" ? props.player.role : props.player.role_mantra} | {props.player.team}</Card.Subtitle>
+            <Card.Subtitle className="fs-6">
+              {
+                props.asta.type == "classic" ?
+                  <span
+                    className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(props.player.role)} text-white`}
+                    style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                  >
+                    {props.player.role}
+                  </span>
+                  : (
+                    props.player.role_mantra
+                      .split("/")
+                      .map((r: string) => r.trim())
+                      .filter(Boolean)
+                      .map((r: string) => (
+                        <span
+                          key={`${props.player.id}-${r}`}
+                          className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-2`}
+                          style={{ minHeight: 20, fontSize: "0.75rem" }}
+                        >
+                          {r}
+                        </span>
+                      ))
+                  )
+              }
+              <span> {props.player.team}</span>
+            </Card.Subtitle>
           </div>
           <div style={{ flex: "1 1 auto", minWidth: 0 }}>
             {

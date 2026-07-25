@@ -27,7 +27,15 @@ CREATE TABLE Fantallenatori (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     asta_id INTEGER NOT NULL,
     name TEXT NOT NULL,
-    max_crediti INTEGER NOT NULL
+    max_crediti INTEGER NOT NULL,
+    classic_p INTEGER NOT NULL,
+    classic_d INTEGER NOT NULL,
+    classic_c INTEGER NOT NULL,
+    classic_a INTEGER NOT NULL,
+    mantra_por_min INTEGER NOT NULL,
+    mantra_por_max INTEGER NOT NULL,
+    mantra_mov_min INTEGER NOT NULL,
+    mantra_mov_max INTEGER NOT NULL
 );
 
 CREATE TABLE PlayersTaken (

@@ -197,15 +197,27 @@ class AstaDAO {
         });
     }
 
-    async createFantallenatore(asta_id: number, name: string, max_crediti: number) {
+    async createFantallenatore(
+        asta_id: number,
+        name: string,
+        max_crediti: number,
+        classic_p: number,
+        classic_d: number,
+        classic_c: number,
+        classic_a: number,
+        mantra_por_min: number,
+        mantra_por_max: number,
+        mantra_mov_min: number,
+        mantra_mov_max: number
+    ) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const sql = `
-                    INSERT INTO Fantallenatori (asta_id, name, max_crediti)
-                    VALUES (?, ?, ?)
+                    INSERT INTO Fantallenatori (asta_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 `;
 
-                db.run(sql, [asta_id, name, max_crediti], function (err: Error | null) {
+                db.run(sql, [asta_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max], function (err: Error | null) {
                     if (err) {
                         return reject(err);
                     }
@@ -220,14 +232,22 @@ class AstaDAO {
     }
 
     async getFantallenatori(asta_id: number) {
-        return new Promise<any[]>((resolve, reject) =>  {
+        return new Promise<any[]>((resolve, reject) => {
             const sql = `
                 SELECT
                     F.id,
                     F.asta_id,
                     F.name,
                     F.max_crediti,
-                    COALESCE(SUM(PT.crediti), 0) AS crediti_spent
+                    COALESCE(SUM(PT.crediti), 0) AS crediti_spent,
+                    F.classic_p,
+                    F.classic_d,
+                    F.classic_c,
+                    F.classic_a,
+                    F.mantra_por_min,
+                    F.mantra_por_max,
+                    F.mantra_mov_min,
+                    F.mantra_mov_max
                 FROM Fantallenatori F
                 LEFT JOIN PlayersTaken PT
                     ON PT.fantallenatore_id = F.id
@@ -248,7 +268,15 @@ class AstaDAO {
                     asta_id: row.asta_id,
                     name: row.name,
                     max_crediti: row.max_crediti,
-                    crediti_spent: row.crediti_spent
+                    crediti_spent: row.crediti_spent,
+                    classic_p: row.classic_p,
+                    classic_d: row.classic_d,
+                    classic_c: row.classic_c,
+                    classic_a: row.classic_a,
+                    mantra_por_min: row.mantra_por_min,
+                    mantra_por_max: row.mantra_por_max,
+                    mantra_mov_min: row.mantra_mov_min,
+                    mantra_mov_max: row.mantra_mov_max
                 }));
 
                 resolve(fantallenatori);

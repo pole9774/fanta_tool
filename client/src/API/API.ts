@@ -89,7 +89,7 @@ async function updatePlayerIndex(asta_id: number, player_id: number, role: strin
     const response = await fetch(baseURL + `asta/${asta_id}/players/${player_id}/`, {
         method: "PATCH",
         headers: {
-        "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({ role, new_index_role }),
     });
@@ -97,13 +97,36 @@ async function updatePlayerIndex(asta_id: number, player_id: number, role: strin
     return response;
 }
 
-async function addFantallenatore(asta_id: number, name: string, max_crediti: number) {
+async function addFantallenatore(
+    asta_id: number,
+    name: string,
+    max_crediti: number,
+    classic_p: number,
+    classic_d: number,
+    classic_c: number,
+    classic_a: number,
+    mantra_por_min: number,
+    mantra_por_max: number,
+    mantra_mov_min: number,
+    mantra_mov_max: number
+) {
     const response = await fetch(baseURL + `asta/${asta_id}/fantallenatori/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, max_crediti }),
+        body: JSON.stringify({ 
+            name,
+            max_crediti,
+            classic_p,
+            classic_d,
+            classic_c,
+            classic_a,
+            mantra_por_min,
+            mantra_por_max,
+            mantra_mov_min,
+            mantra_mov_max
+        }),
     });
 
     return response;

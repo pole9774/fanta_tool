@@ -147,11 +147,20 @@ function TakenPage(props: any) {
         props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
           <div className="mb-5">
             <h3>{fantallenatore.name}</h3>
-            <p>Max crediti: {fantallenatore.max_crediti} | Crediti spesi: {fantallenatore.crediti_spent}</p>
+            {
+              props.asta.type == "classic" ?
+                <p>
+                  Max crediti: {fantallenatore.max_crediti} | Crediti spesi: {fantallenatore.crediti_spent} | Acquistabili: P {fantallenatore.classic_p} | D {fantallenatore.classic_d} | C {fantallenatore.classic_c} | A {fantallenatore.classic_a}
+                </p>
+                :
+                <p>
+                  Max crediti: {fantallenatore.max_crediti} | Crediti spesi: {fantallenatore.crediti_spent} | Acquistabili: P min {fantallenatore.mantra_por_min} | P max {fantallenatore.mantra_por_max} | mov min {fantallenatore.mantra_mov_min} | mov max {fantallenatore.mantra_mov_max}
+                </p>
+            }
             {
               props.playersTaken.map((player: PlayerTaken) => (
                 player.fantallenatore_id == fantallenatore.id ?
-                  <Card className="mb-1" border={getCardColor(player.role)}>
+                  <Card className="mb-1">
                     <Card.Body className="py-2 px-3">
                       <div className="d-flex justify-content-between align-items-start gap-3">
                         <div className="flex-grow-1">
@@ -159,7 +168,31 @@ function TakenPage(props: any) {
                             {player.name}
                           </Card.Title>
                           <Card.Subtitle>
-                            {props.asta.type == "classic" ? player.role : player.role_mantra} | {player.team} | Crediti: {player.crediti}
+                            {
+                              props.asta.type == "classic" ?
+                                <span
+                                  className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(player.role)} text-white`}
+                                  style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                                >
+                                  {player.role}
+                                </span>
+                                : (
+                                  player.role_mantra
+                                    .split("/")
+                                    .map((r: string) => r.trim())
+                                    .filter(Boolean)
+                                    .map((r: string) => (
+                                      <span
+                                        key={`${player.id}-${r}`}
+                                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-2`}
+                                        style={{ minHeight: 20, fontSize: "0.75rem" }}
+                                      >
+                                        {r}
+                                      </span>
+                                    ))
+                                )
+                            }
+                            {" Crediti: " + player.crediti}
                           </Card.Subtitle>
                         </div>
                         <div style={{ minWidth: 220 }} className="d-flex flex-column align-items-end">
@@ -217,7 +250,7 @@ function TakenPage(props: any) {
                                   Riassegna
                                 </Button>
                                 <Button
-                                  variant="outline-danger"
+                                  variant="outline-secondary"
                                   size="sm"
                                   className="mt-1"
                                   onClick={() => handleCancelAssign(player)}
@@ -236,7 +269,7 @@ function TakenPage(props: any) {
           </div>
         ))
       }
-      <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} />
+      <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} asta={props.asta} />
       <Button
         variant="secondary"
         className="mt-5"
