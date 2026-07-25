@@ -159,7 +159,7 @@ async function reassignPlayer(taken_id: number, fantallenatore_id: number, credi
     const response = await fetch(baseURL + `asta/re-assign/${taken_id}/fantallenatore/${fantallenatore_id}/`, {
         method: "PATCH",
         headers: {
-        "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({ crediti }),
     });
@@ -171,7 +171,7 @@ async function updateNotes(asta_id: number, player_id: number, player_name: stri
     const response = await fetch(baseURL + `asta/${asta_id}/players/${player_id}/notes/`, {
         method: "PATCH",
         headers: {
-        "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({ player_name, notes }),
     });
@@ -183,9 +183,21 @@ async function cancelAssign(asta_id: number, taken_id: number, taken_name: strin
     const response = await fetch(baseURL + `asta/${asta_id}/cancel-assign/${taken_id}/`, {
         method: "DELETE",
         headers: {
-        "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({ asta_id, taken_id, taken_name }),
+    });
+
+    return response;
+}
+
+async function importPlayers(source_asta_id: number, target_asta_id: number) {
+    const response = await fetch(baseURL + `asta/import-from-asta`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ source_asta_id, target_asta_id }),
     });
 
     return response;
@@ -204,7 +216,8 @@ const API = {
     getPlayersTaken,
     reassignPlayer,
     updateNotes,
-    cancelAssign
+    cancelAssign,
+    importPlayers
 };
 
 export default API;

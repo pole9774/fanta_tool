@@ -58,6 +58,10 @@ class AstaController {
     async cancelAssign(asta_id: number, taken_id: number, taken_name: string) {
         return this.astaDAO.cancelAssign(asta_id, taken_id, taken_name);
     }
+
+    async importPlayers(source_asta_id: number, target_asta_id: number) {
+        return this.astaDAO.importPlayers(source_asta_id, target_asta_id);
+    }
 }
 
 export default AstaController;

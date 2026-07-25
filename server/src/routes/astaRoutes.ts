@@ -253,6 +253,23 @@ class AstaRoutes {
                     .catch((error: any) => next(error));
             }
         );
+
+        // importa giocatori da asta
+        this.router.post(
+            "/import-from-asta",
+            body("source_asta_id").isInt({ min: 1 }),
+            body("target_asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .importPlayers(
+                        req.body.source_asta_id,
+                        req.body.target_asta_id
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
     }
 }
 

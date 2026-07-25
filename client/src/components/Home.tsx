@@ -14,6 +14,10 @@ function Home(props: any) {
   const [nFantallenatoriAsta, setNFantallenatoriAsta] = useState<number>(10);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
+  const [importSourceAstaId, setImportSourceAstaId] = useState<number>(0);
+  const [importTargetAstaId, setImportTargetAstaId] = useState<number>(0);
+  const [isImporting, setIsImporting] = useState<boolean>(false);
+
   const [dirty, setDirty] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -40,6 +44,25 @@ function Home(props: any) {
     }
   };
 
+  const handleImportPlayers = async (sourceAstaId: number, targetAstaId: number) => {
+    setIsImporting(true);
+
+    try {
+      const response = await API.importPlayers(sourceAstaId, targetAstaId);
+
+      if (response && response.ok) {
+        showToast.success("Players imported successfully");
+        setDirty(true);
+      } else {
+        showToast.error("Failed to import players");
+      }
+    } catch (error) {
+      showToast.error("Failed to import players");
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   useEffect(() => {
     const loadAste = async () => {
       try {
@@ -56,6 +79,8 @@ function Home(props: any) {
 
   return (
     <Container className="my-5">
+
+      {/* selezione asta */}
       <div className="mb-5">
         <ListGroup className="mb-3">
           {aste.map((asta) => (
@@ -73,6 +98,7 @@ function Home(props: any) {
         </ListGroup>
       </div>
 
+      {/* creazione asta */}
       <Card>
         <Card.Header as="h5" className="bg-primary text-white">
           Create Asta
@@ -81,7 +107,7 @@ function Home(props: any) {
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="name" className="mb-3">
               <Form.Label>Name</Form.Label>
-              <Form.Control 
+              <Form.Control
                 type="text"
                 placeholder="Enter name asta"
                 value={nameAsta}
@@ -130,6 +156,60 @@ function Home(props: any) {
               disabled={isCreating}
             >
               {isCreating ? "Submitting..." : "Create Asta"}
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
+
+      {/* importa giocatori da asta source a asta target */}
+      <Card className='mt-5'>
+        <Card.Header as="h5" className="bg-primary text-white">
+          Import Players
+        </Card.Header>
+        <Card.Body>
+          <Form>
+            <Form.Group controlId={`source-asta`} className="mb-3">
+              <Form.Label>Source Asta</Form.Label>
+              <Form.Select
+                value={importSourceAstaId}
+                onChange={(e) => setImportSourceAstaId(Number(e.target.value))}
+              >
+                {
+                  <>
+                    <option value={0}>-</option>
+                    {
+                      aste.map((asta: Asta) => (
+                        <option value={asta.id}>{"(" + asta.id + ") " + asta.name}</option>
+                      ))
+                    }
+                  </>
+                }
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId={`target-asta`} className="mb-3">
+              <Form.Label>Target Asta</Form.Label>
+              <Form.Select
+                value={importTargetAstaId}
+                onChange={(e) => setImportTargetAstaId(Number(e.target.value))}
+              >
+                {
+                  <>
+                    <option value={0}>-</option>
+                    {
+                      aste.map((asta: Asta) => (
+                        <option value={asta.id}>{"(" + asta.id + ") " + asta.name}</option>
+                      ))
+                    }
+                  </>
+                }
+              </Form.Select>
+            </Form.Group>
+            <Button
+              variant="primary"
+              disabled={isImporting}
+              onClick={() => handleImportPlayers(importSourceAstaId, importTargetAstaId)}
+            >
+              {isImporting ? "Importing..." : "Import"}
             </Button>
           </Form>
         </Card.Body>

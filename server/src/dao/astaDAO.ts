@@ -393,6 +393,40 @@ class AstaDAO {
             });
         });
     }
+
+    async importPlayers(source_asta_id: number, target_asta_id: number) {
+        return new Promise<any>((resolve, reject) => {
+            const sql = `
+                INSERT INTO Players (
+                    asta_id,
+                    name,
+                    team,
+                    role,
+                    index_role,
+                    role_mantra,
+                    notes,
+                    taken
+                )
+                SELECT
+                    ?,
+                    P.name,
+                    P.team,
+                    P.role,
+                    P.index_role,
+                    P.role_mantra,
+                    P.notes,
+                    0
+                FROM Players P
+                WHERE P.asta_id = ?
+            `;
+
+            db.run(sql, [target_asta_id, source_asta_id], function (err: Error | null) {
+                if (err) return reject(err);
+
+                resolve({ source_asta_id, target_asta_id });
+            });
+        });
+    }
 }
 
 export default AstaDAO;
