@@ -41,7 +41,7 @@ function TakenPage(props: any) {
 
   const handleCancelAssign = async (player: PlayerTaken) => {
     const confirmed = window.confirm(
-      `Are you sure you want to cancel assign for ${player.name}?`
+      `Cancellare l'acquisto di ${player.name}?`
     );
     if (!confirmed) return;
 
@@ -145,25 +145,22 @@ function TakenPage(props: any) {
     <>
       {
         props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-          <div className="mb-4">
+          <div className="mb-5">
             <h3>{fantallenatore.name}</h3>
-            <p>Max crediti: {fantallenatore.max_crediti} - Crediti spent: {fantallenatore.crediti_spent}</p>
+            <p>Max crediti: {fantallenatore.max_crediti} | Crediti spesi: {fantallenatore.crediti_spent}</p>
             {
               props.playersTaken.map((player: PlayerTaken) => (
                 player.fantallenatore_id == fantallenatore.id ?
                   <Card className="mb-1" border={getCardColor(player.role)}>
-                    <Card.Body className="py-1 px-3">
+                    <Card.Body className="py-2 px-3">
                       <div className="d-flex justify-content-between align-items-start gap-3">
                         <div className="flex-grow-1">
                           <Card.Title>
                             {player.name}
                           </Card.Title>
                           <Card.Subtitle>
-                            {props.asta.type == "classic" ? player.role : player.role_mantra} | {player.team}
+                            {props.asta.type == "classic" ? player.role : player.role_mantra} | {player.team} | Crediti: {player.crediti}
                           </Card.Subtitle>
-                          <Card.Text>
-                            Crediti: {player.crediti}
-                          </Card.Text>
                         </div>
                         <div style={{ minWidth: 220 }} className="d-flex flex-column align-items-end">
                           {
@@ -198,35 +195,36 @@ function TakenPage(props: any) {
                                     onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
                                     disabled={isAssigning}
                                   >
-                                    {isAssigning ? "Assigning..." : "Assign"}
+                                    {isAssigning ? "Assegnando..." : "Assegna"}
                                   </Button>
                                   <Button
                                     variant="secondary"
                                     size="sm"
                                     onClick={() => setAssigningPlayerId(null)}
                                   >
-                                    Cancel
+                                    Annulla
                                   </Button>
                                 </div>
                               </>
                               :
-                              <>
+                              <div className="d-flex flex-row gap-2 justify-content-end">
                                 <Button
                                   variant="outline-primary"
                                   size="sm"
-                                  className="mb-1"
+                                  className="mt-1"
                                   onClick={() => handleAssignClick(player)}
                                 >
-                                  Reassign
+                                  Riassegna
                                 </Button>
                                 <Button
-                                  variant="outline-primary"
+                                  variant="outline-danger"
                                   size="sm"
+                                  className="mt-1"
                                   onClick={() => handleCancelAssign(player)}
                                 >
-                                  Cancel Assign
+                                  Cancella
                                 </Button>
-                              </>
+                              </div>
                           }
                         </div>
                       </div>
@@ -244,7 +242,7 @@ function TakenPage(props: any) {
         className="mt-5"
         onClick={handleExportFantallenatoriWithPlayersTxt}
       >
-        Export Asta
+        Esporta Asta
       </Button>
     </>
   );

@@ -107,15 +107,15 @@ function AddPlayerForm(props: any) {
   return (
     <Card>
       <Card.Header as="h5" className="bg-primary text-white">
-        Create Player
+        Aggiungi Giocatore
       </Card.Header>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
           <Form.Group controlId="name" className="mb-3">
-            <Form.Label>Name</Form.Label>
+            <Form.Label>Nome</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Enter player name"
+              placeholder="Inserisci nome giocatore"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               required
@@ -123,10 +123,10 @@ function AddPlayerForm(props: any) {
             />
           </Form.Group>
           <Form.Group controlId="team" className="mb-3">
-            <Form.Label>Team</Form.Label>
+            <Form.Label>Squadra</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Enter player team"
+              placeholder="Inserisci squadra giocatore"
               value={playerTeam}
               onChange={(e) => setPlayerTeam(e.target.value)}
               required
@@ -134,10 +134,10 @@ function AddPlayerForm(props: any) {
             />
           </Form.Group>
           <Form.Group controlId="notes" className="mb-3">
-            <Form.Label>Notes</Form.Label>
+            <Form.Label>Note</Form.Label>
             <Form.Control
               as="textarea"
-              placeholder="Enter player notes"
+              placeholder="Inserisci note giocatore"
               rows={3}
               value={playerNotes}
               onChange={(e) => setPlayerNotes(e.target.value)}
@@ -148,7 +148,7 @@ function AddPlayerForm(props: any) {
           {
             props.asta.type == "classic" ?
               <Form.Group controlId="role_classic" className="mb-3">
-                <Form.Label>Role</Form.Label>
+                <Form.Label>Ruolo</Form.Label>
                 <Form.Select
                   value={playerRole1}
                   onChange={(e) => {
@@ -166,7 +166,7 @@ function AddPlayerForm(props: any) {
               :
               <>
                 <Form.Group controlId="role_mantra_1" className="mb-3">
-                  <Form.Label>Role 1</Form.Label>
+                  <Form.Label>Ruolo 1</Form.Label>
                   <Form.Select
                     value={playerRole1}
                     onChange={(e) => {
@@ -189,7 +189,7 @@ function AddPlayerForm(props: any) {
                   </Form.Select>
                 </Form.Group>
                 <Form.Group controlId="role_mantra_2" className="mb-3">
-                  <Form.Label>Role 2</Form.Label>
+                  <Form.Label>Ruolo 2</Form.Label>
                   <Form.Select
                     value={playerRole2}
                     onChange={(e) => {
@@ -212,7 +212,7 @@ function AddPlayerForm(props: any) {
                   </Form.Select>
                 </Form.Group>
                 <Form.Group controlId="role_mantra_3" className="mb-3">
-                  <Form.Label>Role 3</Form.Label>
+                  <Form.Label>Ruolo 3</Form.Label>
                   <Form.Select
                     value={playerRole3}
                     onChange={(e) => {
@@ -241,7 +241,7 @@ function AddPlayerForm(props: any) {
             type="submit"
             disabled={isCreating}
           >
-            {isCreating ? "Submitting..." : "Create Player"}
+            {isCreating ? "Creando..." : "Crea Giocatore"}
           </Button>
         </Form>
       </Card.Body>

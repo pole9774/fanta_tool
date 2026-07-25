@@ -35,15 +35,15 @@ function AddFantallenatoreForm(props: any) {
   return (
     <Card>
       <Card.Header as="h5" className="bg-primary text-white">
-        Create Fantallenatore
+        Aggiungi Fantallenatore
       </Card.Header>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
           <Form.Group controlId="name" className="mb-3">
-            <Form.Label>Name</Form.Label>
+            <Form.Label>Nome</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Enter fantallenatore name"
+              placeholder="Inserisci nome fantallenatore"
               value={nameFantallenatore}
               onChange={(e) => setNameFantallenatore(e.target.value)}
               required
@@ -54,7 +54,7 @@ function AddFantallenatoreForm(props: any) {
             <Form.Label>Max Crediti</Form.Label>
             <Form.Control
               type="number"
-              placeholder="Insert max crediti"
+              placeholder="Inserisci max crediti"
               step={1}
               value={maxCreditiFantallenatore}
               onChange={(e) => setMaxCreditiFantallenatore(Number(e.target.value))}
@@ -66,7 +66,7 @@ function AddFantallenatoreForm(props: any) {
             type="submit"
             disabled={isCreating}
           >
-            {isCreating ? "Submitting..." : "Create Fantallenatore"}
+            {isCreating ? "Creando..." : "Crea Fantallenatore"}
           </Button>
         </Form>
       </Card.Body>

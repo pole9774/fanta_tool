@@ -101,15 +101,15 @@ function Home(props: any) {
       {/* creazione asta */}
       <Card>
         <Card.Header as="h5" className="bg-primary text-white">
-          Create Asta
+          Aggiungi Asta
         </Card.Header>
         <Card.Body>
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="name" className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Nome</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="Enter name asta"
+                placeholder="Inserisci nome asta"
                 value={nameAsta}
                 onChange={(e) => setNameAsta(e.target.value)}
                 required
@@ -117,7 +117,7 @@ function Home(props: any) {
               />
             </Form.Group>
             <Form.Group controlId="type" className="mb-3">
-              <Form.Label>Type</Form.Label>
+              <Form.Label>Formato</Form.Label>
               <Form.Check
                 type="radio"
                 name="typeAsta"
@@ -155,7 +155,7 @@ function Home(props: any) {
               type="submit"
               disabled={isCreating}
             >
-              {isCreating ? "Submitting..." : "Create Asta"}
+              {isCreating ? "Creando..." : "Crea Asta"}
             </Button>
           </Form>
         </Card.Body>
@@ -164,7 +164,7 @@ function Home(props: any) {
       {/* importa giocatori da asta source a asta target */}
       <Card className='mt-5'>
         <Card.Header as="h5" className="bg-primary text-white">
-          Import Players
+          Importa Giocatori
         </Card.Header>
         <Card.Body>
           <Form>
@@ -209,7 +209,7 @@ function Home(props: any) {
               disabled={isImporting}
               onClick={() => handleImportPlayers(importSourceAstaId, importTargetAstaId)}
             >
-              {isImporting ? "Importing..." : "Import"}
+              {isImporting ? "Importando..." : "Importa"}
             </Button>
           </Form>
         </Card.Body>

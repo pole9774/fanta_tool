@@ -76,7 +76,7 @@ function SortableCard(props: any) {
       <Card.Body className="py-1 px-3">
         <div className="d-flex align-items-start gap-3">
           <div style={{ flex: "0 0 200px" }}>
-            <Card.Title className="d-flex align-items-center gap-2 fs-5">
+            <Card.Title className="d-flex align-items-center gap-2 fs-5 mt-1">
               <span
                 className="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
                 style={{ width: 20, height: 20, fontSize: "0.75rem" }}
@@ -123,7 +123,7 @@ function SortableCard(props: any) {
                     className="p-0 text-decoration-none"
                     onClick={() => toggleNotes(props.player.id)}
                   >
-                    {expandedNotes[props.player.id] ? "Show less" : "Show more"}
+                    {expandedNotes[props.player.id] ? "Nascondi" : "Mostra tutto"}
                   </Button>
                 </>
             }
@@ -157,14 +157,14 @@ function SortableCard(props: any) {
                       onClick={() => props.onSaveEdit(props.player.id, props.player.name)}
                       disabled={props.isUpdating}
                     >
-                      {props.isUpdating ? "Saving..." : "Save"}
+                      {props.isUpdating ? "Salvando..." : "Salva"}
                     </Button>
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={props.onCancelEdit}
                     >
-                      Cancel
+                      Annulla
                     </Button>
                   </>
                   :
@@ -172,12 +172,12 @@ function SortableCard(props: any) {
                     {
                       props.assigningPlayerId != props.player.id ?
                         <Button
-                          variant="outline-primary"
+                          variant="outline-secondary"
                           size="sm"
-                          className="me-2"
+                          className="me-1"
                           onClick={() => props.onEditClick(props.player)}
                         >
-                          Edit Notes
+                          Edit Note
                         </Button>
                         : <></>
                     }
@@ -220,14 +220,14 @@ function SortableCard(props: any) {
                       onClick={() => props.onSaveAssign(props.player.id, props.player.name, props.assignFantallenatoreId, props.assignCrediti)}
                       disabled={props.isAssigning}
                     >
-                      {props.isAssigning ? "Saving..." : "Save"}
+                      {props.isAssigning ? "Salvando..." : "Salva"}
                     </Button>
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={props.onCancelAssign}
                     >
-                      Cancel
+                      Annulla
                     </Button>
                   </>
                   :
@@ -235,11 +235,11 @@ function SortableCard(props: any) {
                     {
                       props.player.taken == 0 && props.editingPlayerId != props.player.id ?
                         <Button
-                          variant="outline-primary"
+                          variant="outline-success"
                           size="sm"
                           onClick={() => props.onAssignClick(props.player)}
                         >
-                          Assign
+                          Assegna
                         </Button>
                         : <></>
                     }

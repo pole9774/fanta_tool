@@ -6,7 +6,7 @@ function DisplayedRoleSelection(props: any) {
     <>
       {
         props.asta.type == "classic" ?
-          <ButtonGroup>
+          <ButtonGroup className="mt-3 me-4">
             <Button
               variant={props.currentRole == "P" ? "primary" : "outline-primary"}
               onClick={() => props.setCurrentRole("P")}
@@ -33,7 +33,7 @@ function DisplayedRoleSelection(props: any) {
             </Button>
           </ButtonGroup>
           :
-          <ButtonGroup>
+          <ButtonGroup className="mt-3 me-3">
             <Button
               variant={props.currentRole == "P" ? "primary" : "outline-primary"}
               onClick={() => props.setCurrentRole("P")}

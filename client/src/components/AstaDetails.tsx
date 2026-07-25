@@ -103,21 +103,23 @@ function AstaDetails(props: any) {
           // Bottone switch player list -> taken e viceversa
           isTakenPage ?
             <Button
-              variant="primary"
+              variant="secondary"
+              className="mt-3"
               onClick={() => setIsTakenPage(false)}
             >
-              Go to Players
+              { "< " + "Lista Giocatori" }
             </Button>
             :
             <Button
-              variant="primary"
+              variant="secondary"
+              className="mt-3"
               onClick={() => setIsTakenPage(true)}
             >
-              Go to Taken
+              { "Acquisti" + " >" }
             </Button>
         }
       </div>
-      <div className="mt-3">
+      <div className="mt-4">
         {
           // Player List
           (asta && players && !isTakenPage) ?
