@@ -1,10 +1,17 @@
 import { Card, Button, Form } from "react-bootstrap";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useState } from "react";
 import Player from "../entities/player";
 import Fantallenatore from '../entities/fantallenatore';
 
 function SortableCard(props: any) {
+
+  const [expandedNotes, setExpandedNotes] = useState<Record<number, boolean>>({});
+
+  const toggleNotes = (playerId: number) => {
+    setExpandedNotes((prev) => ({ ...prev, [playerId]: !prev[playerId] }));
+  };
 
   const {
     attributes,
@@ -19,6 +26,8 @@ function SortableCard(props: any) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    backgroundColor: props.player.taken == 0 ? "#212529" : "#3d444b",
+    color: "#fff"
   };
 
   type MainType = "classic" | "mantra";
@@ -63,13 +72,22 @@ function SortableCard(props: any) {
       style={style}
       className="mb-1"
       border={getCardColor()}
-      bg={props.player.taken == 0 ? "dark" : "secondary"}
     >
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-start">
-          <div className="flex-grow-1">
-            <Card.Title>{props.player.index_role} - {props.player.name}</Card.Title>
-            <Card.Subtitle>{props.player.team}, {props.asta.type == "classic" ? props.player.role : props.player.role_mantra}</Card.Subtitle>
+      <Card.Body className="py-1 px-3">
+        <div className="d-flex align-items-start gap-3">
+          <div style={{ flex: "0 0 200px" }}>
+            <Card.Title className="d-flex align-items-center gap-2 fs-5">
+              <span
+                className="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
+                style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+              >
+                {props.player.index_role}
+              </span>
+              <span>{props.player.name}</span>
+            </Card.Title>
+            <Card.Subtitle className="fs-6">{props.asta.type == "classic" ? props.player.role : props.player.role_mantra} | {props.player.team}</Card.Subtitle>
+          </div>
+          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
             {
               props.editingPlayerId == props.player.id ?
                 <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-2">
@@ -82,119 +100,152 @@ function SortableCard(props: any) {
                   />
                 </Form.Group>
                 :
-                <Card.Text>{props.player.notes}</Card.Text>
-            }
-            {
-              props.editingPlayerId == props.player.id ?
                 <>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => props.onSaveEdit(props.player.id, props.player.name)}
-                    disabled={props.isUpdating}
+                  <Card.Text
+                    className="mb-1"
+                    style={
+                      expandedNotes[props.player.id]
+                        ? { whiteSpace: "pre-wrap" }
+                        : {
+                          whiteSpace: "pre-wrap",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }
+                    }
                   >
-                    {props.isUpdating ? "Saving..." : "Save"}
-                  </Button>
+                    {props.player.notes}
+                  </Card.Text>
                   <Button
-                    variant="secondary"
+                    variant="link"
                     size="sm"
-                    onClick={props.onCancelEdit}
+                    className="p-0 text-decoration-none"
+                    onClick={() => toggleNotes(props.player.id)}
                   >
-                    Cancel
-                  </Button>
-                </>
-                :
-                <>
-                  {
-                    props.assigningPlayerId != props.player.id ?
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        className="me-2"
-                        onClick={() => props.onEditClick(props.player)}
-                      >
-                        Edit Notes
-                      </Button>
-                      : <></>
-                  }
-                </>
-            }
-            {
-              (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
-                <>
-                  <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-3">
-                    <Form.Select
-                      value={props.assignFantallenatoreId}
-                      onChange={(e) => props.setAssignFantallenatoreId(Number(e.target.value))}
-                    >
-                      {
-                        <>
-                          <option value={undefined}>-</option>
-                          {
-                            props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-                              <option value={fantallenatore.id}>{fantallenatore.name}</option>
-                            ))
-                          }
-                        </>
-                      }
-                    </Form.Select>
-                  </Form.Group>
-                  <Form.Group controlId={`assign-crediti-${props.player.id}`} className="mb-3">
-                    <Form.Control
-                      type="number"
-                      placeholder="Insert crediti"
-                      step={1}
-                      value={props.assignCrediti}
-                      onChange={(e) => props.setAssignCrediti(Number(e.target.value))}
-                      required
-                    />
-                  </Form.Group>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => props.onSaveAssign(props.player.id, props.player.name, props.assignFantallenatoreId, props.assignCrediti)}
-                    disabled={props.isAssigning}
-                  >
-                    {props.isAssigning ? "Saving..." : "Save"}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={props.onCancelAssign}
-                  >
-                    Cancel
+                    {expandedNotes[props.player.id] ? "Show less" : "Show more"}
                   </Button>
                 </>
-                :
-                <>
-                  {
-                    props.player.taken == 0 && props.editingPlayerId != props.player.id ?
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => props.onAssignClick(props.player)}
-                      >
-                        Assign
-                      </Button>
-                      : <></>
-                  }
-                </>
-
             }
           </div>
           <div
-            {...attributes}
-            {...listeners}
-            style={{
-              cursor: 'grab',
-              padding: '8px',
-              fontSize: '20px',
-            }}
-            title="Drag to reorder"
+            style={{ flex: "0 0 220px" }}
+            className="d-flex flex-column align-items-end gap-1"
           >
-            ⠿
+            <div
+              {...attributes}
+              {...listeners}
+              style={{
+                cursor: 'grab',
+                paddingBottom: '2px',
+                paddingLeft: '5px',
+                paddingRight: '5px',
+                fontSize: '16px',
+              }}
+              title="Drag to reorder"
+            >
+              ⠿
+            </div>
+            <div className="d-flex flex-wrap justify-content-end gap-1">
+              {
+                props.editingPlayerId == props.player.id ?
+                  <>
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => props.onSaveEdit(props.player.id, props.player.name)}
+                      disabled={props.isUpdating}
+                    >
+                      {props.isUpdating ? "Saving..." : "Save"}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={props.onCancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                  :
+                  <>
+                    {
+                      props.assigningPlayerId != props.player.id ?
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          className="me-2"
+                          onClick={() => props.onEditClick(props.player)}
+                        >
+                          Edit Notes
+                        </Button>
+                        : <></>
+                    }
+                  </>
+              }
+              {
+                (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
+                  <>
+                    <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-3">
+                      <Form.Select
+                        value={props.assignFantallenatoreId}
+                        onChange={(e) => props.setAssignFantallenatoreId(Number(e.target.value))}
+                      >
+                        {
+                          <>
+                            <option value={undefined}>-</option>
+                            {
+                              props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
+                                <option value={fantallenatore.id}>{fantallenatore.name}</option>
+                              ))
+                            }
+                          </>
+                        }
+                      </Form.Select>
+                    </Form.Group>
+                    <Form.Group controlId={`assign-crediti-${props.player.id}`} className="mb-3">
+                      <Form.Control
+                        type="number"
+                        placeholder="Insert crediti"
+                        step={1}
+                        value={props.assignCrediti}
+                        onChange={(e) => props.setAssignCrediti(Number(e.target.value))}
+                        required
+                      />
+                    </Form.Group>
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="me-2"
+                      onClick={() => props.onSaveAssign(props.player.id, props.player.name, props.assignFantallenatoreId, props.assignCrediti)}
+                      disabled={props.isAssigning}
+                    >
+                      {props.isAssigning ? "Saving..." : "Save"}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={props.onCancelAssign}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                  :
+                  <>
+                    {
+                      props.player.taken == 0 && props.editingPlayerId != props.player.id ?
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => props.onAssignClick(props.player)}
+                        >
+                          Assign
+                        </Button>
+                        : <></>
+                    }
+                  </>
+              }
+            </div>
           </div>
         </div>
       </Card.Body>

@@ -54,6 +54,52 @@ function TakenPage(props: any) {
     }
   };
 
+  const handleExportFantallenatoriWithPlayersTxt = () => {
+    const lines: string[] = [];
+
+    lines.push(`Asta: ${props.asta?.name ?? props.asta_id}`);
+    lines.push(`Type: ${props.asta?.type ?? "-"}`);
+    lines.push(`Generated at: ${new Date().toLocaleString()}`);
+    lines.push("");
+
+    props.fantallenatoriAsta.forEach((f: Fantallenatore, index: number) => {
+      lines.push(`${index + 1}. ${f.name}`);
+      lines.push(`   Max crediti: ${f.max_crediti}`);
+      lines.push(`   Crediti spent: ${f.crediti_spent}`);
+
+      const players = props.playersTaken.filter(
+        (p: PlayerTaken) => p.fantallenatore_id === f.id
+      );
+
+      if (players.length === 0) {
+        lines.push(`   Players: none`);
+      } else {
+        lines.push(`   Players (${players.length}):`);
+        players.forEach((p: PlayerTaken, i: number) => {
+          const roleLabel = props.asta?.type === "classic" ? p.role : p.role_mantra;
+          lines.push(
+            `     ${i + 1}) ${p.name} - ${p.team} - ${roleLabel} - Crediti: ${p.crediti}`
+          );
+        });
+      }
+
+      lines.push("");
+    });
+
+    const content = lines.join("\n");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `fantallenatori_players_asta_${props.asta_id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+  };
+
   type MainType = "classic" | "mantra";
   type CardColor = "warning" | "success" | "primary" | "info" | "danger" | "secondary";
 
@@ -181,6 +227,13 @@ function TakenPage(props: any) {
         ))
       }
       <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} />
+      <Button
+        variant="secondary"
+        className="mt-5"
+        onClick={handleExportFantallenatoriWithPlayersTxt}
+      >
+        Export Asta
+      </Button>
     </>
   );
 }
