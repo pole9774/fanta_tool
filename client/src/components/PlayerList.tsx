@@ -77,6 +77,27 @@ function PlayerList(props: any) {
     }
   };
 
+  const handleDeletePlayer = async (playerId: number, playerName: string) => {
+    const confirmed = window.confirm(
+      `Eliminare il giocatore ${playerName}?`
+    );
+    if (!confirmed) return;
+
+    try {
+      const response = await API.deletePlayer(Number(props.asta_id), playerId, playerName);
+
+      if (response && response.ok) {
+        showToast.success("Player deleted successfully");
+        setEditingPlayerId(null);
+        props.setDirty(true);
+      } else {
+        showToast.error("Failed to delete the player");
+      }
+    } catch (error) {
+      showToast.error("Failed to delete the player");
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -124,6 +145,7 @@ function PlayerList(props: any) {
                 onEditClick={handleEditClick}
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={() => setEditingPlayerId(null)}
+                onDeletePlayer={handleDeletePlayer}
                 setEditNotes={setEditNotes}
                 assigningPlayerId={assigningPlayerId}
                 assignCrediti={assignCrediti}

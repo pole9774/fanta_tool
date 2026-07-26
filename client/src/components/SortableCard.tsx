@@ -209,7 +209,7 @@ function SortableCard(props: any) {
                     <Button
                       variant="success"
                       size="sm"
-                      className="me-2"
+                      className="me-1"
                       onClick={() => props.onSaveEdit(props.player.id, props.player.name)}
                       disabled={props.isUpdating}
                     >
@@ -218,10 +218,22 @@ function SortableCard(props: any) {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={props.onCancelEdit}
+                      className="me-1"
+                      onClick={() => props.onCancelEdit()}
                     >
                       Annulla
                     </Button>
+                    {
+                      props.player.taken == 0 ?
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => props.onDeletePlayer(props.player.id, props.player.name)}
+                        >
+                          Elimina
+                        </Button>
+                        : <></>
+                    }
                   </>
                   :
                   <>
@@ -233,7 +245,7 @@ function SortableCard(props: any) {
                           className="me-1"
                           onClick={() => props.onEditClick(props.player)}
                         >
-                          Edit Note
+                          Edit
                         </Button>
                         : <></>
                     }

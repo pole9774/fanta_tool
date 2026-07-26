@@ -286,6 +286,23 @@ class AstaRoutes {
                     .catch((error: any) => next(error));
             }
         );
+
+        // elimina giocatore
+        this.router.delete(
+            "/:asta_id/delete-player/:player_id",
+            body("player_name").notEmpty().isString(),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .deletePlayer(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.player_id),
+                        req.body.player_name
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
     }
 }
 

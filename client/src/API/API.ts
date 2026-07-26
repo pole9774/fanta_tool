@@ -226,6 +226,18 @@ async function importPlayers(source_asta_id: number, target_asta_id: number) {
     return response;
 }
 
+async function deletePlayer(asta_id: number, player_id: number, player_name: string) {
+    const response = await fetch(baseURL + `asta/${asta_id}/delete-player/${player_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ player_name }),
+    });
+
+    return response;
+}
+
 const API = {
     getAste,
     getAsta,
@@ -240,7 +252,8 @@ const API = {
     reassignPlayer,
     updateNotes,
     cancelAssign,
-    importPlayers
+    importPlayers,
+    deletePlayer
 };
 
 export default API;

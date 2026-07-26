@@ -455,6 +455,27 @@ class AstaDAO {
             });
         });
     }
+
+    async deletePlayer(asta_id: number, player_id: number, player_name: string) {
+        return new Promise<any>((resolve, reject) => {
+            const delete_player_sql = `
+                DELETE FROM Players WHERE asta_id = ? AND name = ?
+            `;
+
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
+
+                db.run(delete_player_sql, [asta_id, player_name]);
+
+                db.run("COMMIT", (err: Error | null) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve({ asta_id, player_id, player_name });
+                });
+            });
+        });
+    }
 }
 
 export default AstaDAO;
