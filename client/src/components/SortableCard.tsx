@@ -26,7 +26,7 @@ function SortableCard(props: any) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    backgroundColor: props.player.taken == 0 ? "#212529" : "#3d444b",
+    backgroundColor: props.player.taken == 0 ? "#212529" : "#393f46",
     color: "#fff"
   };
 
@@ -82,7 +82,12 @@ function SortableCard(props: any) {
               >
                 {props.player.index_role}
               </span>
-              <span>{props.player.name}</span>
+              {
+                props.player.taken == 1 ?
+                  <span className="text-secondary">{props.player.name}</span>
+                  :
+                  <span>{props.player.name}</span>
+              }
             </Card.Title>
             <Card.Subtitle className="fs-6">
               {
@@ -109,7 +114,12 @@ function SortableCard(props: any) {
                       ))
                   )
               }
-              <span> {props.player.team}</span>
+              {
+                props.player.taken == 1 ?
+                  <span className="text-secondary mx-1"> {props.player.team}</span>
+                  :
+                  <span className="mx-1"> {props.player.team}</span>
+              }
             </Card.Subtitle>
           </div>
           <div style={{ flex: "1 1 auto", minWidth: 0 }}>
@@ -126,22 +136,43 @@ function SortableCard(props: any) {
                 </Form.Group>
                 :
                 <>
-                  <Card.Text
-                    className="mb-1"
-                    style={
-                      expandedNotes[props.player.id]
-                        ? { whiteSpace: "pre-wrap" }
-                        : {
-                          whiteSpace: "pre-wrap",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 1,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
+                  {
+                    props.player.taken == 1 ?
+                      <Card.Text
+                        className="mb-1 text-secondary"
+                        style={
+                          expandedNotes[props.player.id]
+                            ? { whiteSpace: "pre-wrap" }
+                            : {
+                              whiteSpace: "pre-wrap",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }
                         }
-                    }
-                  >
-                    {props.player.notes}
-                  </Card.Text>
+                      >
+                        {props.player.notes}
+                      </Card.Text>
+                      :
+                      <Card.Text
+                        className="mb-1"
+                        style={
+                          expandedNotes[props.player.id]
+                            ? { whiteSpace: "pre-wrap" }
+                            : {
+                              whiteSpace: "pre-wrap",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }
+                        }
+                      >
+                        {props.player.notes}
+                      </Card.Text>
+                  }
+
                   <Button
                     variant="link"
                     size="sm"

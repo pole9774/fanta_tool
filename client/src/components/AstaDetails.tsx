@@ -83,13 +83,13 @@ function AstaDetails(props: any) {
   }, [asta_id, dirty]);
 
   return (
-    <Container className="my-5">
+    <Container className="my-4">
       {
         // Info asta selezionata
         asta ?
-          <p>
-            {asta_id} - {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + ")"}
-          </p>
+          <h5>
+            {asta_id} | {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + " partecipanti)"}
+          </h5>
           : <></>
       }
       <div className="d-flex align-items-center gap-2">
