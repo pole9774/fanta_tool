@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button, Form, Container, Row, Col, Card, ButtonGroup } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { Button, Container } from "react-bootstrap";
+import { useParams } from "react-router-dom";
 import { showToast } from '../utilities/toast';
 import API from "../API/API";
 import Asta from "../entities/asta";
@@ -113,7 +113,7 @@ function AstaDetails(props: any) {
               className="mt-3"
               onClick={() => setIsTakenPage(false)}
             >
-              {"< " + "Lista Giocatori"}
+              {"◂ " + "Lista Giocatori"}
             </Button>
             :
             <Button
@@ -121,7 +121,7 @@ function AstaDetails(props: any) {
               className="mt-3"
               onClick={() => setIsTakenPage(true)}
             >
-              {"Acquisti" + " >"}
+              {"Acquisti" + " ▸"}
             </Button>
         }
       </div>

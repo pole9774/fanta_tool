@@ -128,35 +128,22 @@ function SortableCard(props: any) {
                   />
                 </Form.Group>
                 :
-                <>
-                  {
-                    <Card.Text
-                      className="mb-1"
-                      style={
-                        expandedNotes[props.player.id]
-                          ? { whiteSpace: "pre-wrap" }
-                          : {
-                            whiteSpace: "pre-wrap",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 1,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                          }
+                <Card.Text
+                  className="my-1"
+                  style={
+                    expandedNotes[props.player.id]
+                      ? { whiteSpace: "pre-wrap" }
+                      : {
+                        whiteSpace: "pre-wrap",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
                       }
-                    >
-                      {props.player.notes}
-                    </Card.Text>
                   }
-
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="p-0 text-decoration-none"
-                    onClick={() => toggleNotes(props.player.id)}
-                  >
-                    {expandedNotes[props.player.id] ? "Nascondi" : "Mostra tutto"}
-                  </Button>
-                </>
+                >
+                  {props.player.notes}
+                </Card.Text>
             }
           </div>
           <div
@@ -214,14 +201,24 @@ function SortableCard(props: any) {
                   <>
                     {
                       props.assigningPlayerId != props.player.id ?
-                        <Button
-                          variant="outline-secondary"
-                          size="sm"
-                          className="me-1"
-                          onClick={() => props.onEditClick(props.player)}
-                        >
-                          Edit
-                        </Button>
+                        <>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="p-0 text-decoration-none me-2"
+                            onClick={() => toggleNotes(props.player.id)}
+                          >
+                            {expandedNotes[props.player.id] ? "▴ Nascondi" : "▾ Espandi"}
+                          </Button>
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            className="me-1"
+                            onClick={() => props.onEditClick(props.player)}
+                          >
+                            Edit
+                          </Button>
+                        </>
                         : <></>
                     }
                   </>
@@ -229,7 +226,7 @@ function SortableCard(props: any) {
               {
                 (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
                   <>
-                    <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-3">
+                    <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-1">
                       <Form.Select
                         value={props.assignFantallenatoreId}
                         onChange={(e) => props.setAssignFantallenatoreId(Number(e.target.value))}
@@ -246,7 +243,7 @@ function SortableCard(props: any) {
                         }
                       </Form.Select>
                     </Form.Group>
-                    <Form.Group controlId={`assign-crediti-${props.player.id}`} className="mb-3">
+                    <Form.Group controlId={`assign-crediti-${props.player.id}`} className="mb-2">
                       <Form.Control
                         type="number"
                         placeholder="Insert crediti"
@@ -259,7 +256,7 @@ function SortableCard(props: any) {
                     <Button
                       variant="success"
                       size="sm"
-                      className="me-2"
+                      className="me-2 mb-1"
                       onClick={() => props.onSaveAssign(props.player.id, props.player.name, props.assignFantallenatoreId, props.assignCrediti)}
                       disabled={props.isAssigning}
                     >
@@ -268,6 +265,7 @@ function SortableCard(props: any) {
                     <Button
                       variant="secondary"
                       size="sm"
+                      className="mb-1"
                       onClick={props.onCancelAssign}
                     >
                       Annulla

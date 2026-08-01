@@ -248,7 +248,7 @@ function TakenPage(props: any) {
                             {
                               player.id == assigningPlayerId ?
                                 <>
-                                  <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-3">
+                                  <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-2">
                                     <Form.Select
                                       value={assignFantallenatoreId}
                                       onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
@@ -260,7 +260,7 @@ function TakenPage(props: any) {
                                       }
                                     </Form.Select>
                                   </Form.Group>
-                                  <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-3">
+                                  <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-2">
                                     <Form.Control
                                       type="number"
                                       placeholder="Insert crediti"
@@ -293,7 +293,7 @@ function TakenPage(props: any) {
                                   <Button
                                     variant="outline-primary"
                                     size="sm"
-                                    className="mt-1"
+                                    className="mt-2"
                                     onClick={() => handleAssignClick(player)}
                                   >
                                     Riassegna
@@ -301,7 +301,7 @@ function TakenPage(props: any) {
                                   <Button
                                     variant="outline-secondary"
                                     size="sm"
-                                    className="mt-1"
+                                    className="mt-2"
                                     onClick={() => handleCancelAssign(player)}
                                   >
                                     Annulla
