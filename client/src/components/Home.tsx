@@ -78,7 +78,7 @@ function Home(props: any) {
   }, [dirty]);
 
   return (
-    <Container className="my-5">
+    <Container fluid className="my-5 px-5">
 
       {/* selezione asta */}
       <div className="mb-5">

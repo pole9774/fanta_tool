@@ -83,7 +83,7 @@ function AstaDetails(props: any) {
   }, [asta_id, dirty]);
 
   return (
-    <Container className="my-4">
+    <Container fluid className="my-4 px-4">
       {
         // Info asta selezionata
         asta ?

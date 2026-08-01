@@ -149,176 +149,201 @@ function TakenPage(props: any) {
 
   return (
     <>
-      {
-        props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title className="fs-3">{fantallenatore.name}</Card.Title>
-              {
-                props.asta.type == "classic" ?
-                  <p>
-                    {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti | Limiti acquisti:
-                    {" " + fantallenatore.classic_p}
-                    <span
-                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
-                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
-                    >
-                      P
-                    </span>
-                    {"| " + fantallenatore.classic_d}
-                    <span
-                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white mx-1`}
-                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
-                    >
-                      D
-                    </span>
-                    {"| " + fantallenatore.classic_c}
-                    <span
-                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white mx-1`}
-                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
-                    >
-                      C
-                    </span>
-                    {"| " + fantallenatore.classic_a}
-                    <span
-                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white mx-1`}
-                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
-                    >
-                      A
-                    </span>
-                  </p>
-                  :
-                  <p>
-                    {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti | Limiti acquisti:
-                    <span
-                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
-                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
-                    >
-                      P
-                    </span>
-                    {fantallenatore.mantra_por_min} - {fantallenatore.mantra_por_max} |
-                    <span
-                      className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-1 mx-1`}
-                      style={{ minHeight: 20, fontSize: "0.75rem" }}
-                    >
-                      Mov
-                    </span>
-                    {fantallenatore.mantra_mov_min} - {fantallenatore.mantra_mov_max}
-                  </p>
-              }
-              {
-                props.playersTaken.map((player: PlayerTaken) => (
-                  player.fantallenatore_id == fantallenatore.id ?
-                    <Card className="mb-1">
-                      <Card.Body className="py-2 px-3">
-                        <div className="d-flex justify-content-between align-items-start gap-3">
-                          <div className="flex-grow-1">
-                            <Card.Title>
-                              {player.name}
-                            </Card.Title>
-                            <Card.Subtitle>
-                              {
-                                props.asta.type == "classic" ?
-                                  <span
-                                    className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(player.role)} text-white`}
-                                    style={{ width: 20, height: 20, fontSize: "0.75rem" }}
-                                  >
-                                    {player.role}
-                                  </span>
-                                  : (
-                                    player.role_mantra
-                                      .split("/")
-                                      .map((r: string) => r.trim())
-                                      .filter(Boolean)
-                                      .map((r: string) => (
-                                        <span
-                                          key={`${player.id}-${r}`}
-                                          className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-2`}
-                                          style={{ minHeight: 20, fontSize: "0.75rem" }}
-                                        >
-                                          {r}
-                                        </span>
-                                      ))
-                                  )
-                              }
-                              {" " + player.team + " | Crediti: " + player.crediti}
-                            </Card.Subtitle>
-                          </div>
-                          <div style={{ minWidth: 220 }} className="d-flex flex-column align-items-end">
-                            {
-                              player.id == assigningPlayerId ?
-                                <>
-                                  <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-2">
-                                    <Form.Select
-                                      value={assignFantallenatoreId}
-                                      onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
+      <div
+        className="d-flex flex-row flex-nowrap gap-2 overflow-auto pb-2"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        {
+          props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
+            <Card
+              key={fantallenatore.id}
+              className="mb-0 px-0"
+              style={{
+                width: "325px",
+                flex: "0 0 325px",
+              }}
+            >
+              <Card.Body className="px-2">
+                <Card.Title className="fs-3 px-1">{fantallenatore.name}</Card.Title>
+                {
+                  props.asta.type == "classic" ?
+                    <p className="mb-3 px-1">
+                      {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti
+                    </p>
+                    :
+                    <p className="mb-3 px-1">
+                      {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti
+                    </p>
+                }
+                {
+                  props.playersTaken.map((player: PlayerTaken) => (
+                    player.fantallenatore_id == fantallenatore.id ?
+                      <Card className="mb-1">
+                        <Card.Body className="py-2 px-2">
+                          <div className="d-flex justify-content-between align-items-start gap-3">
+                            <div className="flex-grow-1">
+                              <Card.Title>
+                                {player.name}
+                              </Card.Title>
+                              <Card.Subtitle>
+                                {
+                                  props.asta.type == "classic" ?
+                                    <span
+                                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(player.role)} text-white`}
+                                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
                                     >
-                                      {
-                                        props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-                                          <option value={fantallenatore.id}>{fantallenatore.name}</option>
+                                      {player.role}
+                                    </span>
+                                    : (
+                                      player.role_mantra
+                                        .split("/")
+                                        .map((r: string) => r.trim())
+                                        .filter(Boolean)
+                                        .map((r: string) => (
+                                          <span
+                                            key={`${player.id}-${r}`}
+                                            className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-2`}
+                                            style={{ minHeight: 20, fontSize: "0.75rem" }}
+                                          >
+                                            {r}
+                                          </span>
                                         ))
-                                      }
-                                    </Form.Select>
-                                  </Form.Group>
-                                  <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-2">
-                                    <Form.Control
-                                      type="number"
-                                      placeholder="Insert crediti"
-                                      step={1}
-                                      value={assignCrediti}
-                                      onChange={(e) => setAssignCrediti(Number(e.target.value))}
-                                      required
-                                    />
-                                  </Form.Group>
+                                    )
+                                }
+                                <span>
+                                  {" " + player.team + " | " + player.crediti}🪙
+                                </span>
+                                
+                              </Card.Subtitle>
+                            </div>
+                            <div style={{ width: 105 }} className="d-flex flex-column align-items-end">
+                              {
+                                player.id == assigningPlayerId ?
+                                  <>
+                                    <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-2">
+                                      <Form.Select
+                                        value={assignFantallenatoreId}
+                                        onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
+                                      >
+                                        {
+                                          props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
+                                            <option value={fantallenatore.id}>{fantallenatore.name}</option>
+                                          ))
+                                        }
+                                      </Form.Select>
+                                    </Form.Group>
+                                    <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-2">
+                                      <Form.Control
+                                        type="number"
+                                        placeholder="Insert crediti"
+                                        step={1}
+                                        value={assignCrediti}
+                                        onChange={(e) => setAssignCrediti(Number(e.target.value))}
+                                        required
+                                      />
+                                    </Form.Group>
+                                    <div className="d-flex flex-row gap-2 justify-content-end">
+                                      <Button
+                                        variant="success"
+                                        size="sm"
+                                        onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
+                                        disabled={isAssigning}
+                                      >
+                                        {isAssigning ? "Assegnando..." : "Assegna"}
+                                      </Button>
+                                      <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => setAssigningPlayerId(null)}
+                                      >
+                                        Annulla
+                                      </Button>
+                                    </div>
+                                  </>
+                                  :
                                   <div className="d-flex flex-row gap-2 justify-content-end">
                                     <Button
-                                      variant="success"
+                                      variant="outline-success"
                                       size="sm"
-                                      onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
-                                      disabled={isAssigning}
+                                      className="mt-2"
+                                      onClick={() => handleAssignClick(player)}
                                     >
-                                      {isAssigning ? "Assegnando..." : "Assegna"}
+                                      ⇄
                                     </Button>
                                     <Button
-                                      variant="secondary"
+                                      variant="outline-secondary"
                                       size="sm"
-                                      onClick={() => setAssigningPlayerId(null)}
+                                      className="mt-2"
+                                      onClick={() => handleCancelAssign(player)}
                                     >
-                                      Annulla
+                                      ✕
                                     </Button>
                                   </div>
-                                </>
-                                :
-                                <div className="d-flex flex-row gap-2 justify-content-end">
-                                  <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    className="mt-2"
-                                    onClick={() => handleAssignClick(player)}
-                                  >
-                                    Riassegna
-                                  </Button>
-                                  <Button
-                                    variant="outline-secondary"
-                                    size="sm"
-                                    className="mt-2"
-                                    onClick={() => handleCancelAssign(player)}
-                                  >
-                                    Annulla
-                                  </Button>
-                                </div>
-                            }
+                              }
+                            </div>
                           </div>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                    : <></>
-                ))
-              }
-            </Card.Body>
-          </Card>
-        ))
-      }
+                        </Card.Body>
+                      </Card>
+                      : <></>
+                  ))
+                }
+                {
+                  props.asta.type == "classic" ?
+                    <p className="mb-1 mt-3 px-1">
+                      Limiti acquisti:
+                      {" " + fantallenatore.classic_p}
+                      <span
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
+                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                      >
+                        P
+                      </span>
+                      {"| " + fantallenatore.classic_d}
+                      <span
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white mx-1`}
+                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                      >
+                        D
+                      </span>
+                      {"| " + fantallenatore.classic_c}
+                      <span
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white mx-1`}
+                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                      >
+                        C
+                      </span>
+                      {"| " + fantallenatore.classic_a}
+                      <span
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white mx-1`}
+                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                      >
+                        A
+                      </span>
+                    </p>
+                    :
+                    <p className="mb-1 mt-3 px-1">
+                      Limiti acquisti:
+                      <span
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
+                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                      >
+                        P
+                      </span>
+                      {fantallenatore.mantra_por_min} - {fantallenatore.mantra_por_max} |
+                      <span
+                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-2 mx-1`}
+                        style={{ minHeight: 20, fontSize: "0.75rem" }}
+                      >
+                        Mov
+                      </span>
+                      {fantallenatore.mantra_mov_min} - {fantallenatore.mantra_mov_max}
+                    </p>
+                }
+              </Card.Body>
+            </Card>
+          ))
+        }
+      </div>
       <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} asta={props.asta} />
       <Button
         variant="secondary"
