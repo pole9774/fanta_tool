@@ -88,7 +88,13 @@ function AstaDetails(props: any) {
         // Info asta selezionata
         asta ?
           <h5>
-            {asta_id} | {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + " partecipanti)"}
+            <span
+              className={`d-inline-flex align-items-center justify-content-center rounded-circle text-white mx-2`}
+              style={{ width: 25, height: 25, fontSize: "0.92rem", backgroundColor: "#494949" }}
+            >
+              {asta_id}
+            </span>
+            {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + " partecipanti)"}
           </h5>
           : <></>
       }
@@ -107,7 +113,7 @@ function AstaDetails(props: any) {
               className="mt-3"
               onClick={() => setIsTakenPage(false)}
             >
-              { "< " + "Lista Giocatori" }
+              {"< " + "Lista Giocatori"}
             </Button>
             :
             <Button
@@ -115,7 +121,7 @@ function AstaDetails(props: any) {
               className="mt-3"
               onClick={() => setIsTakenPage(true)}
             >
-              { "Acquisti" + " >" }
+              {"Acquisti" + " >"}
             </Button>
         }
       </div>

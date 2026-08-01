@@ -1,5 +1,5 @@
-import { Button, Form, Container, Row, Col, Card, ButtonGroup } from "react-bootstrap";
-import { useState, useEffect } from 'react';
+import { Button, Form, Card } from "react-bootstrap";
+import { useState } from 'react';
 import { showToast } from '../utilities/toast';
 import API from "../API/API";
 import PlayerTaken from "../entities/playerTaken";
@@ -71,7 +71,7 @@ function TakenPage(props: any) {
       lines.push(`${index + 1}. ${f.name}`);
       lines.push(`   Max crediti: ${f.max_crediti}`);
       lines.push(`   Crediti spesi: ${f.crediti_spent}`);
-      
+
       if (props.asta.type == "classic") {
         lines.push(`   Acquistabili: P ${f.classic_p}, D ${f.classic_d}, C ${f.classic_c}, A ${f.classic_a}`);
       } else {
@@ -157,11 +157,53 @@ function TakenPage(props: any) {
               {
                 props.asta.type == "classic" ?
                   <p>
-                    Max crediti: {fantallenatore.max_crediti} | Crediti spesi: {fantallenatore.crediti_spent} | Acquistabili: P {fantallenatore.classic_p}, D {fantallenatore.classic_d}, C {fantallenatore.classic_c}, A {fantallenatore.classic_a}
+                    {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti | Limiti acquisti:
+                    {" " + fantallenatore.classic_p}
+                    <span
+                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
+                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                    >
+                      P
+                    </span>
+                    {"| " + fantallenatore.classic_d}
+                    <span
+                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white mx-1`}
+                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                    >
+                      D
+                    </span>
+                    {"| " + fantallenatore.classic_c}
+                    <span
+                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white mx-1`}
+                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                    >
+                      C
+                    </span>
+                    {"| " + fantallenatore.classic_a}
+                    <span
+                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white mx-1`}
+                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                    >
+                      A
+                    </span>
                   </p>
                   :
                   <p>
-                    Max crediti: {fantallenatore.max_crediti} | Crediti spesi: {fantallenatore.crediti_spent} | Acquistabili: P min {fantallenatore.mantra_por_min}, P max {fantallenatore.mantra_por_max}, mov min {fantallenatore.mantra_mov_min}, mov max {fantallenatore.mantra_mov_max}
+                    {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti | Limiti acquisti:
+                    <span
+                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
+                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                    >
+                      P
+                    </span>
+                    {fantallenatore.mantra_por_min} - {fantallenatore.mantra_por_max} |
+                    <span
+                      className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-1 mx-1`}
+                      style={{ minHeight: 20, fontSize: "0.75rem" }}
+                    >
+                      Mov
+                    </span>
+                    {fantallenatore.mantra_mov_min} - {fantallenatore.mantra_mov_max}
                   </p>
               }
               {
@@ -262,7 +304,7 @@ function TakenPage(props: any) {
                                     className="mt-1"
                                     onClick={() => handleCancelAssign(player)}
                                   >
-                                    Cancella
+                                    Annulla
                                   </Button>
                                 </div>
                             }
