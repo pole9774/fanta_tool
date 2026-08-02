@@ -151,7 +151,7 @@ function TakenPage(props: any) {
   return (
     <>
       <div
-        className="d-flex flex-row flex-nowrap gap-2 overflow-auto pb-2"
+        className="d-flex flex-row flex-nowrap gap-1 overflow-auto pb-2"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {
@@ -160,38 +160,31 @@ function TakenPage(props: any) {
               key={fantallenatore.id}
               className="mb-0 px-0"
               style={{
-                width: "250px",
-                flex: "0 0 250px",
+                width: "205px",
+                flex: "0 0 205px",
               }}
             >
-              <Card.Body className="px-2">
-                <Card.Title className="fs-3 px-1">{fantallenatore.name}</Card.Title>
-                {
-                  props.asta.type == "classic" ?
-                    <p className="mb-3 px-1">
-                      {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti
-                    </p>
-                    :
-                    <p className="mb-3 px-1">
-                      {fantallenatore.max_crediti - fantallenatore.crediti_spent} / {fantallenatore.max_crediti} crediti rimanenti
-                    </p>
-                }
+              <Card.Body className="px-2 pt-2">
+                <Card.Title className="fs-4 px-1 fw-semibold">{fantallenatore.name}</Card.Title>
+                <p className="mb-3 px-1">
+                  {fantallenatore.max_crediti - fantallenatore.crediti_spent}🪙 {"(tot. " + fantallenatore.max_crediti + ")"}
+                </p>
                 {
                   props.playersTaken.map((player: PlayerTaken) => (
                     player.fantallenatore_id == fantallenatore.id ?
                       <Card className="mb-1">
-                        <Card.Body className="py-2 px-2">
+                        <Card.Body className="py-1 px-2">
                           <div className="d-flex justify-content-between align-items-start gap-3">
                             <div className="flex-grow-1">
-                              <Card.Title>
+                              <Card.Title className="fs-6 fw-semibold">
                                 {player.name}
                               </Card.Title>
-                              <Card.Subtitle>
+                              <Card.Subtitle className="small">
                                 {
                                   props.asta.type == "classic" ?
                                     <span
                                       className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(player.role)} text-white`}
-                                      style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                                      style={{ width: 18, height: 18, fontSize: "0.70rem" }}
                                     >
                                       {player.role}
                                     </span>
@@ -203,8 +196,8 @@ function TakenPage(props: any) {
                                         .map((r: string) => (
                                           <span
                                             key={`${player.id}-${r}`}
-                                            className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-2`}
-                                            style={{ minHeight: 20, fontSize: "0.75rem" }}
+                                            className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-1`}
+                                            style={{ minHeight: 18, fontSize: "0.70rem" }}
                                           >
                                             {r}
                                           </span>
@@ -254,7 +247,7 @@ function TakenPage(props: any) {
                                         onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
                                         disabled={isAssigning}
                                       >
-                                        {isAssigning ? "Assegnando..." : "Assegna"}
+                                        {isAssigning ? "Salvando..." : "Salva"}
                                       </Button>
                                       <Button
                                         variant="secondary"
@@ -268,16 +261,16 @@ function TakenPage(props: any) {
                                   : <></>
                               }
                             </div>
-                            <div style={{ width: 30 }} className="d-flex flex-column align-items-end">
+                            <div style={{ width: 0 }} className="d-flex flex-column align-items-end">
                               {
                                 player.id != assigningPlayerId ?
                                   <Button
-                                    variant="outline-secondary"
+                                    variant="link"
                                     size="sm"
-                                    className="mt-2"
+                                    className="p-0 text-decoration-none mt-3"
                                     onClick={() => handleAssignClick(player)}
                                   >
-                                    ✎
+                                    ▾
                                   </Button>
                                   :
                                   <></>
@@ -291,8 +284,7 @@ function TakenPage(props: any) {
                 }
                 {
                   props.asta.type == "classic" ?
-                    <p className="mb-1 mt-3 px-1">
-                      Limiti:
+                    <p className="mb-0 mt-4 px-1 small">
                       {" " + fantallenatore.classic_p}
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
@@ -323,8 +315,7 @@ function TakenPage(props: any) {
                       </span>
                     </p>
                     :
-                    <p className="mb-1 mt-3 px-1">
-                      Limiti:
+                    <p className="mb-0 mt-4 px-1 small">
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
                         style={{ width: 20, height: 20, fontSize: "0.75rem" }}

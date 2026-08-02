@@ -74,7 +74,7 @@ function SortableCard(props: any) {
       <Card.Body className="py-1 px-3">
         <div className="d-flex align-items-start gap-3">
           <div style={{ flex: "0 0 200px" }}>
-            <Card.Title className="d-flex align-items-center gap-2 fs-5 mt-1">
+            <Card.Title className="d-flex align-items-center gap-2 fs-5 mt-1 fw-semibold">
               <span
                 className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white`}
                 style={{ width: 20, height: 20, fontSize: "0.75rem" }}
