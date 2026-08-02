@@ -228,6 +228,7 @@ function SortableCard(props: any) {
                   <>
                     <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-1">
                       <Form.Select
+                        style={{ width: 180 }}
                         value={props.assignFantallenatoreId}
                         onChange={(e) => props.setAssignFantallenatoreId(Number(e.target.value))}
                       >
@@ -248,6 +249,7 @@ function SortableCard(props: any) {
                         type="number"
                         placeholder="Insert crediti"
                         step={1}
+                        style={{ width: 180 }}
                         value={props.assignCrediti}
                         onChange={(e) => props.setAssignCrediti(Number(e.target.value))}
                         required

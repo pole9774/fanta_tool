@@ -50,6 +50,7 @@ function TakenPage(props: any) {
 
       if (response && response.ok) {
         showToast.success("Player cancel assigned successfully");
+        setAssigningPlayerId(null);
         props.setDirty(true);
       } else {
         showToast.error("Failed to cancel assign the player");
@@ -159,8 +160,8 @@ function TakenPage(props: any) {
               key={fantallenatore.id}
               className="mb-0 px-0"
               style={{
-                width: "325px",
-                flex: "0 0 325px",
+                width: "250px",
+                flex: "0 0 250px",
               }}
             >
               <Card.Body className="px-2">
@@ -213,13 +214,10 @@ function TakenPage(props: any) {
                                 <span>
                                   {" " + player.team + " | " + player.crediti}🪙
                                 </span>
-                                
                               </Card.Subtitle>
-                            </div>
-                            <div style={{ width: 105 }} className="d-flex flex-column align-items-end">
                               {
                                 player.id == assigningPlayerId ?
-                                  <>
+                                  <div className="mt-3">
                                     <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-2">
                                       <Form.Select
                                         value={assignFantallenatoreId}
@@ -244,6 +242,13 @@ function TakenPage(props: any) {
                                     </Form.Group>
                                     <div className="d-flex flex-row gap-2 justify-content-end">
                                       <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => handleCancelAssign(player)}
+                                      >
+                                        ✕
+                                      </Button>
+                                      <Button
                                         variant="success"
                                         size="sm"
                                         onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
@@ -259,26 +264,23 @@ function TakenPage(props: any) {
                                         Annulla
                                       </Button>
                                     </div>
-                                  </>
-                                  :
-                                  <div className="d-flex flex-row gap-2 justify-content-end">
-                                    <Button
-                                      variant="outline-success"
-                                      size="sm"
-                                      className="mt-2"
-                                      onClick={() => handleAssignClick(player)}
-                                    >
-                                      ⇄
-                                    </Button>
-                                    <Button
-                                      variant="outline-secondary"
-                                      size="sm"
-                                      className="mt-2"
-                                      onClick={() => handleCancelAssign(player)}
-                                    >
-                                      ✕
-                                    </Button>
                                   </div>
+                                  : <></>
+                              }
+                            </div>
+                            <div style={{ width: 30 }} className="d-flex flex-column align-items-end">
+                              {
+                                player.id != assigningPlayerId ?
+                                  <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    className="mt-2"
+                                    onClick={() => handleAssignClick(player)}
+                                  >
+                                    ✎
+                                  </Button>
+                                  :
+                                  <></>
                               }
                             </div>
                           </div>
@@ -290,7 +292,7 @@ function TakenPage(props: any) {
                 {
                   props.asta.type == "classic" ?
                     <p className="mb-1 mt-3 px-1">
-                      Limiti acquisti:
+                      Limiti:
                       {" " + fantallenatore.classic_p}
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
@@ -322,7 +324,7 @@ function TakenPage(props: any) {
                     </p>
                     :
                     <p className="mb-1 mt-3 px-1">
-                      Limiti acquisti:
+                      Limiti:
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
                         style={{ width: 20, height: 20, fontSize: "0.75rem" }}
