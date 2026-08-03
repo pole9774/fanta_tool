@@ -74,10 +74,10 @@ function SortableCard(props: any) {
       <Card.Body className="py-1 px-3">
         <div className="d-flex align-items-start gap-3">
           <div style={{ flex: "0 0 200px" }}>
-            <Card.Title className="d-flex align-items-center gap-2 fs-5 mt-1 fw-semibold">
+            <Card.Title className="d-flex align-items-center gap-2 fs-6 mt-1 fw-semibold">
               <span
                 className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white`}
-                style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                style={{ width: 16, height: 16, fontSize: "0.67rem" }}
               >
                 {props.player.index_role}
               </span>
@@ -85,12 +85,12 @@ function SortableCard(props: any) {
                 <span>{props.player.name}</span>
               }
             </Card.Title>
-            <Card.Subtitle className="fs-6">
+            <Card.Subtitle className="small">
               {
                 props.asta.type == "classic" ?
                   <span
                     className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(props.player.role)} text-white`}
-                    style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                    style={{ width: 16, height: 16, fontSize: "0.67rem" }}
                   >
                     {props.player.role}
                   </span>
@@ -102,8 +102,8 @@ function SortableCard(props: any) {
                       .map((r: string) => (
                         <span
                           key={`${props.player.id}-${r}`}
-                          className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-2`}
-                          style={{ minHeight: 20, fontSize: "0.75rem" }}
+                          className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-1`}
+                          style={{ minHeight: 16, fontSize: "0.67rem" }}
                         >
                           {r}
                         </span>
@@ -115,7 +115,7 @@ function SortableCard(props: any) {
               }
             </Card.Subtitle>
           </div>
-          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+          <div style={{ flex: "1 1 auto", minWidth: 0 }} className="small">
             {
               props.editingPlayerId == props.player.id ?
                 <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-2">
@@ -147,24 +147,10 @@ function SortableCard(props: any) {
             }
           </div>
           <div
-            style={{ flex: "0 0 220px" }}
+            style={{ flex: "0 0 250px" }}
             className="d-flex flex-column align-items-end gap-1"
           >
-            <div
-              {...attributes}
-              {...listeners}
-              style={{
-                cursor: 'grab',
-                paddingBottom: '2px',
-                paddingLeft: '5px',
-                paddingRight: '5px',
-                fontSize: '16px',
-              }}
-              title="Drag to reorder"
-            >
-              ⠿
-            </div>
-            <div className="d-flex flex-wrap justify-content-end gap-1">
+            <div className="d-flex flex-wrap justify-content-end gap-1 my-2">
               {
                 props.editingPlayerId == props.player.id ?
                   <>
@@ -288,6 +274,21 @@ function SortableCard(props: any) {
                     }
                   </>
               }
+              <div
+                {...attributes}
+                {...listeners}
+                style={{
+                  cursor: 'grab',
+                  paddingTop: '4px',
+                  paddingBottom: '2px',
+                  paddingLeft: '8px',
+                  paddingRight: '1px',
+                  fontSize: '16px',
+                }}
+                title="Drag to reorder"
+              >
+                ⠿
+              </div>
             </div>
           </div>
         </div>
