@@ -204,8 +204,17 @@ function TakenPage(props: any) {
                                         ))
                                     )
                                 }
-                                <span>
-                                  {" " + player.team + " | " + player.crediti}🪙
+                                <span className="d-inline-flex align-items-center gap-1">
+                                  <img
+                                    src={`/teams/${player.team}.png`}
+                                    alt={player.team}
+                                    style={{ width: 16, height: 16, objectFit: "contain" }}
+                                    className="pt-1 mx-1"
+                                    onError={(e) => {
+                                      e.currentTarget.src = "/teams/default.png";
+                                    }}
+                                  />
+                                  <span>{player.crediti} 🪙</span>
                                 </span>
                               </Card.Subtitle>
                               {

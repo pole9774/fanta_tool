@@ -111,7 +111,23 @@ function SortableCard(props: any) {
                   )
               }
               {
-                <span className="mx-1"> {props.player.team}</span>
+                <span className="d-inline-flex align-items-center gap-1">
+                  <img
+                    src={`/teams/${props.player.team}.png`}
+                    alt={props.player.team}
+                    style={{ width: 16, height: 16, objectFit: "contain" }}
+                    className="pt-1 mx-1"
+                    onError={(e) => {
+                      e.currentTarget.src = "/teams/default.png";
+                    }}
+                  />
+                  {
+                    props.player.taken == 1 ?
+                    <span> {props.player.team}</span>
+                    :
+                    <span className="text-muted"> {props.player.team}</span>
+                  }
+                </span>
               }
             </Card.Subtitle>
           </div>
