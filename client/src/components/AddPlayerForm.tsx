@@ -106,7 +106,7 @@ function AddPlayerForm(props: any) {
 
   return (
     <Card>
-      <Card.Header as="h5" className="bg-primary text-white">
+      <Card.Header as="h5" className="bg-secondary text-white">
         Aggiungi Giocatore
       </Card.Header>
       <Card.Body>
@@ -237,7 +237,7 @@ function AddPlayerForm(props: any) {
               </>
           }
           <Button
-            variant="primary"
+            variant="success"
             type="submit"
             disabled={isCreating}
           >

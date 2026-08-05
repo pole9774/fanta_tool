@@ -124,7 +124,7 @@ function PlayerList(props: any) {
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       <DndContext
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}

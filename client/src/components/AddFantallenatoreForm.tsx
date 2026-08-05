@@ -42,7 +42,7 @@ function AddFantallenatoreForm(props: any) {
 
   return (
     <Card className="mt-5">
-      <Card.Header as="h5" className="bg-primary text-white">
+      <Card.Header as="h5" className="bg-secondary text-white">
         Aggiungi Fantallenatore
       </Card.Header>
       <Card.Body>
@@ -166,7 +166,7 @@ function AddFantallenatoreForm(props: any) {
               </>
           }
           <Button
-            variant="primary"
+            variant="success"
             type="submit"
             disabled={isCreating}
           >

@@ -160,8 +160,8 @@ function TakenPage(props: any) {
               key={fantallenatore.id}
               className="mb-0 px-0"
               style={{
-                width: "205px",
-                flex: "0 0 205px",
+                width: "180px",
+                flex: "0 0 180px",
               }}
             >
               <Card.Body className="px-2 pt-2">
@@ -172,7 +172,7 @@ function TakenPage(props: any) {
                 {
                   props.playersTaken.map((player: PlayerTaken) => (
                     player.fantallenatore_id == fantallenatore.id ?
-                      <Card className="mb-1">
+                      <Card className="mb-0">
                         <Card.Body className="py-1 px-2">
                           <div className="d-flex justify-content-between align-items-start gap-3">
                             <div className="flex-grow-1">
@@ -184,7 +184,7 @@ function TakenPage(props: any) {
                                   props.asta.type == "classic" ?
                                     <span
                                       className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(player.role)} text-white`}
-                                      style={{ width: 18, height: 18, fontSize: "0.70rem" }}
+                                      style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                                     >
                                       {player.role}
                                     </span>
@@ -197,7 +197,7 @@ function TakenPage(props: any) {
                                           <span
                                             key={`${player.id}-${r}`}
                                             className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-1`}
-                                            style={{ minHeight: 18, fontSize: "0.70rem" }}
+                                            style={{ minHeight: 16, fontSize: "0.70rem" }}
                                           >
                                             {r}
                                           </span>
@@ -214,12 +214,12 @@ function TakenPage(props: any) {
                                       e.currentTarget.src = "/teams/default.png";
                                     }}
                                   />
-                                  <span>{player.crediti} 🪙</span>
+                                  <span>{player.crediti}</span>
                                 </span>
                               </Card.Subtitle>
                               {
                                 player.id == assigningPlayerId ?
-                                  <div className="mt-3">
+                                  <div className="mt-3" style={{ width: 140 }}>
                                     <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-2">
                                       <Form.Select
                                         value={assignFantallenatoreId}
@@ -256,27 +256,27 @@ function TakenPage(props: any) {
                                         onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
                                         disabled={isAssigning}
                                       >
-                                        {isAssigning ? "Salvando..." : "Salva"}
+                                        {isAssigning ? "..." : "✓"}
                                       </Button>
                                       <Button
                                         variant="secondary"
                                         size="sm"
                                         onClick={() => setAssigningPlayerId(null)}
                                       >
-                                        Annulla
+                                        ✕
                                       </Button>
                                     </div>
                                   </div>
                                   : <></>
                               }
                             </div>
-                            <div style={{ width: 0 }} className="d-flex flex-column align-items-end">
+                            <div style={{ width: 0, height: 0 }} className="d-flex flex-column align-items-end">
                               {
                                 player.id != assigningPlayerId ?
                                   <Button
                                     variant="link"
                                     size="sm"
-                                    className="p-0 text-decoration-none mt-3"
+                                    className="p-0 text-decoration-none mt-4"
                                     onClick={() => handleAssignClick(player)}
                                   >
                                     ▾
@@ -297,28 +297,28 @@ function TakenPage(props: any) {
                       {" " + fantallenatore.classic_p}
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
-                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         P
                       </span>
                       {"| " + fantallenatore.classic_d}
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white mx-1`}
-                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         D
                       </span>
                       {"| " + fantallenatore.classic_c}
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white mx-1`}
-                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         C
                       </span>
                       {"| " + fantallenatore.classic_a}
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white mx-1`}
-                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         A
                       </span>
@@ -327,14 +327,14 @@ function TakenPage(props: any) {
                     <p className="mb-0 mt-4 px-1 small">
                       <span
                         className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
-                        style={{ width: 20, height: 20, fontSize: "0.75rem" }}
+                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         P
                       </span>
                       {fantallenatore.mantra_por_min} - {fantallenatore.mantra_por_max} |
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-2 mx-1`}
-                        style={{ minHeight: 20, fontSize: "0.75rem" }}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-1 mx-1`}
+                        style={{ minHeight: 16, fontSize: "0.70rem" }}
                       >
                         Mov
                       </span>
