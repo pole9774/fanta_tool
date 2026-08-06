@@ -82,6 +82,34 @@ function AstaDetails(props: any) {
     loadFantallenatori();
   }, [asta_id, dirty]);
 
+  const handleExportPlayersTxt = () => {
+    const lines: string[] = [];
+
+    lines.push(`Asta: ${asta?.name ?? asta_id}`);
+    lines.push(`Tipo: ${asta?.type ?? "-"}`);
+    lines.push(`Tipo: ${currentRole ?? "-"}`);
+    lines.push(`Generated at: ${new Date().toLocaleString()}`);
+    lines.push("");
+
+    players?.forEach((p: Player, index: number) => {
+      const role = asta?.type == "classic" ? p.role : p.role_mantra;
+      lines.push(`${index + 1}. ${p.name} - ${role}`);
+    });
+
+    const content = lines.join("\n");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `players_asta_${asta_id}_${currentRole}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Container fluid className="my-4 px-4">
       {
@@ -145,6 +173,17 @@ function AstaDetails(props: any) {
             : <></>
         }
       </div>
+      {
+        (players && asta && !isTakenPage) ?
+          <Button
+            variant="secondary"
+            className="mt-5"
+            onClick={() => handleExportPlayersTxt()}
+          >
+            Esporta Giocatori
+          </Button>
+          : <></>
+      }
     </Container>
   );
 }

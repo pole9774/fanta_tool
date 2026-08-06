@@ -160,8 +160,8 @@ function TakenPage(props: any) {
               key={fantallenatore.id}
               className="mb-0 px-0"
               style={{
-                width: "180px",
-                flex: "0 0 180px",
+                width: "188px",
+                flex: "0 0 188px",
               }}
             >
               <Card.Body className="px-2 pt-2">
@@ -352,7 +352,7 @@ function TakenPage(props: any) {
         className="mt-5"
         onClick={handleExportFantallenatoriWithPlayersTxt}
       >
-        Esporta Asta
+        Esporta Acquisti
       </Button>
     </>
   );
