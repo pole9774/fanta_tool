@@ -148,6 +148,32 @@ function TakenPage(props: any) {
     return colorMap[type]?.[role] ?? "secondary";
   }
 
+  function getRoleTakenNumber(fantallenatore: Fantallenatore, role: string): number {
+    var count: number = 0;
+    
+    for (const player of props.playersTaken) {
+      if (player.fantallenatore_id == fantallenatore.id) {
+        if (props.asta.type == "classic") {
+          if (player.role == role) {
+            count++;
+          }
+        } else {
+          if (role == "P") {
+            if (player.role == "P") {
+              count++;
+            }
+          } else {
+            if (player.role != "P") {
+              count++;
+            }
+          }
+        }
+      }
+    }
+
+    return count;
+  }
+
   return (
     <>
       <div
@@ -294,51 +320,55 @@ function TakenPage(props: any) {
                 {
                   props.asta.type == "classic" ?
                     <p className="mb-0 mt-4 px-1 small">
-                      {" " + fantallenatore.classic_p}
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white me-2`}
                         style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         P
                       </span>
-                      {"| " + fantallenatore.classic_d}
+                      {getRoleTakenNumber(fantallenatore, "P") + " / " + fantallenatore.classic_p}
+                      <br />
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white mx-1`}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white me-2`}
                         style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         D
                       </span>
-                      {"| " + fantallenatore.classic_c}
+                      {getRoleTakenNumber(fantallenatore, "D") + " / " + fantallenatore.classic_d}
+                      <br />
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white mx-1`}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white me-2`}
                         style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         C
                       </span>
-                      {"| " + fantallenatore.classic_a}
+                      {getRoleTakenNumber(fantallenatore, "C") + " / " + fantallenatore.classic_c}
+                      <br />
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white mx-1`}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white me-2`}
                         style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         A
                       </span>
+                      {getRoleTakenNumber(fantallenatore, "A") + " / " + fantallenatore.classic_a}
                     </p>
                     :
                     <p className="mb-0 mt-4 px-1 small">
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white mx-1`}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white me-1`}
                         style={{ width: 16, height: 16, fontSize: "0.70rem" }}
                       >
                         P
                       </span>
-                      {fantallenatore.mantra_por_min} - {fantallenatore.mantra_por_max} |
+                      {getRoleTakenNumber(fantallenatore, "P") + " (min " + fantallenatore.mantra_por_min}; max {fantallenatore.mantra_por_max + ")"}
+                      <br />
                       <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-1 mx-1`}
+                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-1 me-1`}
                         style={{ minHeight: 16, fontSize: "0.70rem" }}
                       >
-                        Mov
+                        M
                       </span>
-                      {fantallenatore.mantra_mov_min} - {fantallenatore.mantra_mov_max}
+                      {getRoleTakenNumber(fantallenatore, "mov") + " (min " + fantallenatore.mantra_mov_min}; max {fantallenatore.mantra_mov_max + ")"}
                     </p>
                 }
               </Card.Body>
@@ -349,7 +379,7 @@ function TakenPage(props: any) {
       <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} asta={props.asta} />
       <Button
         variant="secondary"
-        className="mt-5"
+        className="my-5"
         onClick={handleExportFantallenatoriWithPlayersTxt}
       >
         Esporta Acquisti
