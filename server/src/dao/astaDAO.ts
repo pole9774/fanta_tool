@@ -456,6 +456,7 @@ class AstaDAO {
         });
     }
 
+    // bug: non aggiorno gli indici degli altri giocatori
     async deletePlayer(asta_id: number, player_id: number, player_name: string) {
         return new Promise<any>((resolve, reject) => {
             const delete_player_sql = `
