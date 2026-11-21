@@ -98,6 +98,36 @@ function PlayerList(props: any) {
     }
   };
 
+  // Classificati: ordinati per index_role (drag&drop). Non classificati: per squadra e poi per nome, alfabetico
+  const classifiedPlayers: Player[] = props.players
+    .filter((player: Player) => player.index_role != null)
+    .sort((a: Player, b: Player) => (a.index_role ?? 0) - (b.index_role ?? 0));
+
+  const unclassifiedPlayers: Player[] = props.players
+    .filter((player: Player) => player.index_role == null)
+    .sort((a: Player, b: Player) =>
+      a.team.localeCompare(b.team, "it", { sensitivity: "base" }) ||
+      a.name.localeCompare(b.name, "it", { sensitivity: "base" })
+    );
+
+  const handleToggleClassified = async (player: Player) => {
+    const classify = player.index_role == null;
+
+    try {
+      const response = await API.setPlayerClassified(Number(props.asta_id), player.id, classify);
+
+      if (response && response.ok) {
+        showToast.success(classify ? "Player moved to classified" : "Player moved to unclassified");
+        setEditingPlayerId(null);
+        props.setDirty(true);
+      } else {
+        showToast.error("Failed to move the player");
+      }
+    } catch {
+      showToast.error("Failed to move the player");
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -105,8 +135,11 @@ function PlayerList(props: any) {
       return;
     }
 
-    const newIndex = props.players.findIndex((player: Player) => player.id === over.id);
-    const newPos = props.players[newIndex].index_role;
+    const newIndex = classifiedPlayers.findIndex((player: Player) => player.id === over.id);
+    if (newIndex < 0) {
+      return;
+    }
+    const newPos = classifiedPlayers[newIndex].index_role ?? 1;
 
     try {
       const response = await API.updatePlayerIndex(Number(props.asta_id), Number(active.id), props.currentRole, newPos);
@@ -123,6 +156,30 @@ function PlayerList(props: any) {
     }
   };
 
+  // Props comuni alle card delle due liste
+  const cardProps = {
+    asta: props.asta,
+    editingPlayerId,
+    editNotes,
+    isUpdating,
+    onEditClick: handleEditClick,
+    onSaveEdit: handleSaveEdit,
+    onCancelEdit: () => setEditingPlayerId(null),
+    onDeletePlayer: handleDeletePlayer,
+    onToggleClassified: handleToggleClassified,
+    setEditNotes,
+    assigningPlayerId,
+    assignCrediti,
+    setAssignCrediti,
+    assignFantallenatoreId,
+    setAssignFantallenatoreId,
+    isAssigning,
+    onAssignClick: handleAssignClick,
+    onSaveAssign: handleSaveAssign,
+    onCancelAssign: () => setAssigningPlayerId(null),
+    fantallenatoriAsta: props.fantallenatoriAsta,
+  };
+
   return (
     <div className="mb-5">
       <DndContext
@@ -130,37 +187,23 @@ function PlayerList(props: any) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={props.players.map((player: Player) => player.id)}
+          items={classifiedPlayers.map((player: Player) => player.id)}
           strategy={verticalListSortingStrategy}
         >
           {
-            props.players.map((player: Player) => (
-              <SortableCard
-                key={player.id}
-                asta={props.asta}
-                player={player}
-                editingPlayerId={editingPlayerId}
-                editNotes={editNotes}
-                isUpdating={isUpdating}
-                onEditClick={handleEditClick}
-                onSaveEdit={handleSaveEdit}
-                onCancelEdit={() => setEditingPlayerId(null)}
-                onDeletePlayer={handleDeletePlayer}
-                setEditNotes={setEditNotes}
-                assigningPlayerId={assigningPlayerId}
-                assignCrediti={assignCrediti}
-                setAssignCrediti={setAssignCrediti}
-                assignFantallenatoreId={assignFantallenatoreId}
-                setAssignFantallenatoreId={setAssignFantallenatoreId}
-                isAssigning={isAssigning}
-                onAssignClick={handleAssignClick}
-                onSaveAssign={handleSaveAssign}
-                onCancelAssign={() => setAssigningPlayerId(null)}
-                fantallenatoriAsta={props.fantallenatoriAsta}
-              />
+            classifiedPlayers.map((player: Player) => (
+              <SortableCard key={player.id} player={player} sortable={true} {...cardProps} />
             ))
           }
         </SortableContext>
+
+        {/* Non classificati: senza posizione, non trascinabili */}
+        <h6 className="mt-4 mb-2 text-secondary">Non classificati ({unclassifiedPlayers.length})</h6>
+        {
+          unclassifiedPlayers.map((player: Player) => (
+            <SortableCard key={player.id} player={player} sortable={false} {...cardProps} />
+          ))
+        }
       </DndContext>
     </div>
   );

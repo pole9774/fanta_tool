@@ -6,6 +6,9 @@ import Fantallenatore from '../entities/fantallenatore';
 
 function SortableCard(props: any) {
 
+  // false per i giocatori non classificati: niente drag&drop
+  const sortable: boolean = props.sortable ?? true;
+
   const [expandedNotes, setExpandedNotes] = useState<Record<number, boolean>>({});
 
   const toggleNotes = (playerId: number) => {
@@ -19,7 +22,7 @@ function SortableCard(props: any) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: props.player.id });
+  } = useSortable({ id: props.player.id, disabled: !sortable });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -79,7 +82,7 @@ function SortableCard(props: any) {
                 className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white`}
                 style={{ width: 16, height: 16, fontSize: "0.67rem" }}
               >
-                {props.player.index_role}
+                {props.player.index_role ?? "–"}
               </span>
               {
                 <span>{props.player.name}</span>
@@ -186,6 +189,14 @@ function SortableCard(props: any) {
                     >
                       Annulla
                     </Button>
+                    <Button
+                      variant="outline-warning"
+                      size="sm"
+                      className="me-1"
+                      onClick={() => props.onToggleClassified(props.player)}
+                    >
+                      {props.player.index_role == null ? "▲ Classifica" : "▼ Non classificato"}
+                    </Button>
                     {
                       props.player.taken == 0 ?
                         <Button
@@ -289,18 +300,20 @@ function SortableCard(props: any) {
                     }
                   </>
               }
+              {/* maniglia drag&drop; per i non classificati resta solo come spazio invisibile, per allineare le card */}
               <div
-                {...attributes}
-                {...listeners}
+                {...(sortable ? attributes : {})}
+                {...(sortable ? listeners : {})}
                 style={{
-                  cursor: 'grab',
+                  cursor: sortable ? 'grab' : 'default',
+                  visibility: sortable ? 'visible' : 'hidden',
                   paddingTop: '4px',
                   paddingBottom: '2px',
                   paddingLeft: '8px',
                   paddingRight: '1px',
                   fontSize: '16px',
                 }}
-                title="Drag to reorder"
+                title={sortable ? "Drag to reorder" : undefined}
               >
                 ⠿
               </div>

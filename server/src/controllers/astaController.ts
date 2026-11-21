@@ -31,6 +31,18 @@ class AstaController {
         return this.astaDAO.updatePlayerIndexRole(asta_id, player_id, role, newIndexRole);
     }
 
+    async setPlayerClassified(asta_id: number, player_id: number, classified: boolean) {
+        return this.astaDAO.setPlayerClassified(asta_id, player_id, classified);
+    }
+
+    async importPlayers(
+        asta_id: number,
+        players: { name: string, team: string, role_mantra: string, roles: string[] }[],
+        dry_run: boolean
+    ) {
+        return this.astaDAO.importPlayers(asta_id, players, dry_run);
+    }
+
     async createFantallenatore(
         asta_id: number,
         name: string,
@@ -45,6 +57,23 @@ class AstaController {
         mantra_mov_max: number
     ) {
         return this.astaDAO.createFantallenatore(asta_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max);
+    }
+
+    async updateFantallenatore(
+        asta_id: number,
+        fantallenatore_id: number,
+        name: string,
+        max_crediti: number,
+        classic_p: number,
+        classic_d: number,
+        classic_c: number,
+        classic_a: number,
+        mantra_por_min: number,
+        mantra_por_max: number,
+        mantra_mov_min: number,
+        mantra_mov_max: number
+    ) {
+        return this.astaDAO.updateFantallenatore(asta_id, fantallenatore_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max);
     }
 
     async getFantallenatori(asta_id: number) {

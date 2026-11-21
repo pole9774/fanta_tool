@@ -2,6 +2,7 @@ import Asta from "../entities/asta";
 import Player from "../entities/player";
 import Fantallenatore from "../entities/fantallenatore";
 import PlayerTaken from "../entities/playerTaken";
+import type { ImportedPlayer } from "../utilities/excelPlayers";
 
 const baseURL = "http://localhost:3001/api/";
 
@@ -97,6 +98,19 @@ async function updatePlayerIndex(asta_id: number, player_id: number, role: strin
     return response;
 }
 
+// Sposta un giocatore (singola riga-ruolo) tra classificati (true) e non classificati (false)
+async function setPlayerClassified(asta_id: number, player_id: number, classified: boolean) {
+    const response = await fetch(baseURL + `asta/${asta_id}/players/${player_id}/classification/`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ classified }),
+    });
+
+    return response;
+}
+
 async function addFantallenatore(
     asta_id: number,
     name: string,
@@ -127,6 +141,33 @@ async function addFantallenatore(
             mantra_mov_min,
             mantra_mov_max
         }),
+    });
+
+    return response;
+}
+
+async function updateFantallenatore(
+    asta_id: number,
+    fantallenatore_id: number,
+    fields: {
+        name: string,
+        max_crediti: number,
+        classic_p: number,
+        classic_d: number,
+        classic_c: number,
+        classic_a: number,
+        mantra_por_min: number,
+        mantra_por_max: number,
+        mantra_mov_min: number,
+        mantra_mov_max: number
+    }
+) {
+    const response = await fetch(baseURL + `asta/${asta_id}/fantallenatori/${fantallenatore_id}/`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fields),
     });
 
     return response;
@@ -226,6 +267,19 @@ async function deletePlayer(asta_id: number, player_id: number, player_name: str
     return response;
 }
 
+// Import in blocco di giocatori (es. da Excel). dry_run = true: solo riepilogo (da importare / già presenti), nessuna scrittura
+async function importPlayers(asta_id: number, players: ImportedPlayer[], dry_run: boolean) {
+    const response = await fetch(baseURL + `asta/${asta_id}/players/import/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ players, dry_run }),
+    });
+
+    return response;
+}
+
 const API = {
     getAste,
     getAsta,
@@ -233,14 +287,17 @@ const API = {
     addAsta,
     addPlayer,
     updatePlayerIndex,
+    setPlayerClassified,
     addFantallenatore,
+    updateFantallenatore,
     getFantallenatori,
     assignPlayer,
     getPlayersTaken,
     reassignPlayer,
     updateNotes,
     cancelAssign,
-    deletePlayer
+    deletePlayer,
+    importPlayers
 };
 
 export default API;

@@ -1,5 +1,18 @@
 import db from "../db/db";
 
+// Ricompatta gli index_role dei giocatori classificati di un'asta (1..N per ruolo, senza buchi, mantenendo l'ordine).
+// I giocatori non classificati (index_role NULL) restano NULL. Parametro: asta_id
+const COMPACT_INDEXES_SQL = `
+    UPDATE Players
+    SET index_role = R.rn
+    FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY role ORDER BY index_role, id) AS rn
+        FROM Players
+        WHERE asta_id = ? AND index_role IS NOT NULL
+    ) AS R
+    WHERE Players.id = R.id AND Players.index_role <> R.rn
+`;
+
 class AstaDAO {
     async getAste(): Promise<any[]> {
         return new Promise<any[]>((resolve, reject) => {
@@ -124,15 +137,16 @@ class AstaDAO {
         });
     }
 
+    // I nuovi giocatori nascono non classificati (index_role NULL)
     async createPlayer(asta_id: number, name: string, team: string, role: string, role_mantra: string, notes: string, taken: number) {
         return new Promise<any>((resolve, reject) => {
             try {
                 const sql = `
                     INSERT INTO Players (asta_id, name, team, role, index_role, role_mantra, notes, taken)
-                    VALUES (?, ?, ?, ?, COALESCE((SELECT MAX(index_role) FROM Players WHERE role = ? AND asta_id = ?), 0) + 1, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, NULL, ?, ?, ?)
                 `;
 
-                db.run(sql, [asta_id, name, team, role, role, asta_id, role_mantra, notes, taken], function (err: Error | null) {
+                db.run(sql, [asta_id, name, team, role, role_mantra, notes, taken], function (err: Error | null) {
                     if (err) {
                         return reject(err);
                     }
@@ -160,7 +174,7 @@ class AstaDAO {
                 }
 
                 if (!row || row.current_index_role == null) {
-                    return reject(new Error("Player not found"));
+                    return reject(new Error("Player not found or not classified"));
                 }
 
                 const old_index_role = row.current_index_role;
@@ -228,6 +242,43 @@ class AstaDAO {
             catch (error: any) {
                 reject(error);
             }
+        });
+    }
+
+    async updateFantallenatore(
+        asta_id: number,
+        fantallenatore_id: number,
+        name: string,
+        max_crediti: number,
+        classic_p: number,
+        classic_d: number,
+        classic_c: number,
+        classic_a: number,
+        mantra_por_min: number,
+        mantra_por_max: number,
+        mantra_mov_min: number,
+        mantra_mov_max: number
+    ) {
+        return new Promise<any>((resolve, reject) => {
+            const sql = `
+                UPDATE Fantallenatori
+                SET name = ?, max_crediti = ?,
+                    classic_p = ?, classic_d = ?, classic_c = ?, classic_a = ?,
+                    mantra_por_min = ?, mantra_por_max = ?, mantra_mov_min = ?, mantra_mov_max = ?
+                WHERE id = ? AND asta_id = ?
+            `;
+
+            db.run(sql, [name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max, fantallenatore_id, asta_id], function (this: any, err: Error | null) {
+                if (err) {
+                    return reject(err);
+                }
+
+                if (this.changes === 0) {
+                    return reject(new Error("Fantallenatore not found"));
+                }
+
+                resolve({ asta_id, fantallenatore_id, name });
+            });
         });
     }
 
@@ -428,17 +479,6 @@ class AstaDAO {
                 DELETE FROM Players WHERE asta_id = ? AND name = ?
             `;
 
-            const compact_indexes_sql = `
-                UPDATE Players
-                SET index_role = R.rn
-                FROM (
-                    SELECT id, ROW_NUMBER() OVER (PARTITION BY role ORDER BY index_role, id) AS rn
-                    FROM Players
-                    WHERE asta_id = ?
-                ) AS R
-                WHERE Players.id = R.id AND Players.index_role <> R.rn
-            `;
-
             let firstError: Error | null = null;
             const trackError = (err: Error | null) => {
                 if (err && !firstError) firstError = err;
@@ -449,7 +489,7 @@ class AstaDAO {
 
                 db.run(delete_player_sql, [asta_id, player_name], trackError);
 
-                db.run(compact_indexes_sql, [asta_id], (err: Error | null) => {
+                db.run(COMPACT_INDEXES_SQL, [asta_id], (err: Error | null) => {
                     trackError(err);
 
                     if (firstError) {
@@ -462,6 +502,147 @@ class AstaDAO {
                             return db.run("ROLLBACK", () => reject(commitErr));
                         }
                         resolve({ asta_id, player_id, player_name });
+                    });
+                });
+            });
+        });
+    }
+
+    // Sposta una singola riga-ruolo tra classificati e non classificati.
+    // classified = true: la riga va in fondo alla lista del suo ruolo (MAX + 1).
+    // classified = false: index_role diventa NULL e la lista del ruolo viene ricompattata.
+    async setPlayerClassified(asta_id: number, player_id: number, classified: boolean) {
+        return new Promise<any>((resolve, reject) => {
+            const get_sql = `SELECT role, index_role FROM Players WHERE id = ? AND asta_id = ?`;
+
+            db.get(get_sql, [player_id, asta_id], (err: Error | null, row: any) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                if (!row) {
+                    return reject(new Error("Player not found"));
+                }
+
+                const isClassified = row.index_role != null;
+                if (isClassified == classified) {
+                    return resolve({ asta_id, player_id, classified, index_role: row.index_role });
+                }
+
+                if (classified) {
+                    const classify_sql = `
+                        UPDATE Players
+                        SET index_role = COALESCE((SELECT MAX(index_role) FROM Players WHERE asta_id = ? AND role = ?), 0) + 1
+                        WHERE id = ? AND asta_id = ? AND index_role IS NULL
+                    `;
+
+                    return db.run(classify_sql, [asta_id, row.role, player_id, asta_id], function (err: Error | null) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve({ asta_id, player_id, classified });
+                    });
+                }
+
+                let firstError: Error | null = null;
+                const trackError = (err: Error | null) => {
+                    if (err && !firstError) firstError = err;
+                };
+
+                db.serialize(() => {
+                    db.run("BEGIN TRANSACTION", trackError);
+
+                    db.run(`UPDATE Players SET index_role = NULL WHERE id = ? AND asta_id = ?`, [player_id, asta_id], trackError);
+
+                    db.run(COMPACT_INDEXES_SQL, [asta_id], (err: Error | null) => {
+                        trackError(err);
+
+                        if (firstError) {
+                            const error = firstError;
+                            return db.run("ROLLBACK", () => reject(error));
+                        }
+
+                        db.run("COMMIT", (commitErr: Error | null) => {
+                            if (commitErr) {
+                                return db.run("ROLLBACK", () => reject(commitErr));
+                            }
+                            resolve({ asta_id, player_id, classified });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    // Import in blocco (es. da file Excel). Ogni giocatore diventa una riga per ruolo, non classificata (index_role NULL).
+    // I giocatori il cui nome esiste già nell'asta vengono saltati. Con dry_run calcola solo il riepilogo senza scrivere.
+    async importPlayers(
+        asta_id: number,
+        players: { name: string, team: string, role_mantra: string, roles: string[] }[],
+        dry_run: boolean
+    ) {
+        return new Promise<any>((resolve, reject) => {
+            db.all(`SELECT DISTINCT name FROM Players WHERE asta_id = ?`, [asta_id], (err: Error | null, rows: any[]) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                const existing = new Set(rows.map((row) => row.name));
+                const seen = new Set<string>();
+                const toImport: typeof players = [];
+                const skipped: string[] = [];
+
+                for (const player of players) {
+                    if (existing.has(player.name) || seen.has(player.name)) {
+                        skipped.push(player.name);
+                    } else {
+                        seen.add(player.name);
+                        toImport.push(player);
+                    }
+                }
+
+                if (dry_run || toImport.length == 0) {
+                    return resolve({ dry_run, to_import: toImport.length, imported: 0, rows_inserted: 0, skipped });
+                }
+
+                const insert_sql = `
+                    INSERT INTO Players (asta_id, name, team, role, index_role, role_mantra, notes, taken)
+                    VALUES (?, ?, ?, ?, NULL, ?, '', 0)
+                `;
+
+                let firstError: Error | null = null;
+                const trackError = (err: Error | null) => {
+                    if (err && !firstError) firstError = err;
+                };
+                let rowsInserted = 0;
+
+                db.serialize(() => {
+                    db.run("BEGIN TRANSACTION", trackError);
+
+                    const stmt = db.prepare(insert_sql, trackError);
+                    for (const player of toImport) {
+                        for (const role of player.roles) {
+                            stmt.run([asta_id, player.name, player.team, role, player.role_mantra], (err: Error | null) => {
+                                trackError(err);
+                                if (!err) rowsInserted++;
+                            });
+                        }
+                    }
+
+                    stmt.finalize((err: Error | null) => {
+                        trackError(err);
+
+                        if (firstError) {
+                            const error = firstError;
+                            return db.run("ROLLBACK", () => reject(error));
+                        }
+
+                        db.run("COMMIT", (commitErr: Error | null) => {
+                            if (commitErr) {
+                                return db.run("ROLLBACK", () => reject(commitErr));
+                            }
+                            resolve({ dry_run, to_import: toImport.length, imported: toImport.length, rows_inserted: rowsInserted, skipped });
+                        });
                     });
                 });
             });

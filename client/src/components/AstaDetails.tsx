@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Container } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { showToast } from '../utilities/toast';
 import API from "../API/API";
 import Asta from "../entities/asta";
@@ -9,12 +9,14 @@ import PlayerTaken from "../entities/playerTaken";
 import Fantallenatore from '../entities/fantallenatore';
 import DisplayedRoleSelection from './DisplayedRoleSelection';
 import AddPlayerForm from './AddPlayerForm';
+import ImportPlayersForm from './ImportPlayersForm';
 import PlayerList from './PlayerList';
 import TakenPage from './TakenPage';
 
 function AstaDetails(props: any) {
 
   const { asta_id } = useParams();
+  const navigate = useNavigate();
 
   const [asta, setAsta] = useState<Asta>();
   const [currentRole, setCurrentRole] = useState<string>("P");
@@ -42,9 +44,9 @@ function AstaDetails(props: any) {
   useEffect(() => {
     const loadPlayers = async () => {
       try {
+        // l'ordinamento (classificati per index_role, non classificati per squadra/nome) lo fa PlayerList
         const p = await API.getPlayers(Number(asta_id), currentRole);
-        const sortedPlayers = p.sort((a, b) => a.index_role - b.index_role);
-        setPlayers(sortedPlayers);
+        setPlayers(p);
         setDirty(false);
       } catch (error) {
         showToast.error('Failed to load Players');
@@ -84,20 +86,30 @@ function AstaDetails(props: any) {
 
   return (
     <Container fluid className="my-4 px-4">
-      {
-        // Info asta selezionata
-        asta ?
-          <h5>
-            <span
-              className={`d-inline-flex align-items-center justify-content-center rounded-circle text-white mx-2`}
-              style={{ width: 25, height: 25, fontSize: "0.92rem", backgroundColor: "#494949" }}
-            >
-              {asta_id}
-            </span>
-            {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + " partecipanti)"}
-          </h5>
-          : <></>
-      }
+      <div className="d-flex align-items-center gap-2 mb-2">
+        {/* Torna alla lista delle aste (sempre "/", anche se la pagina è stata aperta direttamente da URL) */}
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={() => navigate("/")}
+        >
+          ◂ Aste
+        </Button>
+        {
+          // Info asta selezionata
+          asta ?
+            <h5 className="mb-0">
+              <span
+                className={`d-inline-flex align-items-center justify-content-center rounded-circle text-white mx-2`}
+                style={{ width: 25, height: 25, fontSize: "0.92rem", backgroundColor: "#494949" }}
+              >
+                {asta_id}
+              </span>
+              {asta.name} {"(" + asta.type}, {asta.n_fantallenatori + " partecipanti)"}
+            </h5>
+            : <></>
+        }
+      </div>
       <div className="d-flex align-items-center gap-2">
         {
           // Selezione ruolo
@@ -136,6 +148,12 @@ function AstaDetails(props: any) {
           // Add Player form
           (asta && !isTakenPage) ?
             <AddPlayerForm asta_id={asta_id} asta={asta} setDirty={setDirty} />
+            : <></>
+        }
+        {
+          // Import giocatori da Excel
+          (asta && !isTakenPage) ?
+            <ImportPlayersForm asta_id={asta_id ?? ""} asta={asta} setDirty={setDirty} />
             : <></>
         }
         {

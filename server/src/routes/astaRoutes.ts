@@ -106,6 +106,30 @@ class AstaRoutes {
             }
         );
 
+        // Importa in blocco una lista di giocatori (es. da file Excel); con dry_run restituisce solo il riepilogo
+        this.router.post(
+            "/:asta_id/players/import",
+            param("asta_id").isInt({ min: 1 }),
+            body("players").isArray({ min: 1 }),
+            body("players.*.name").isString().notEmpty(),
+            body("players.*.team").isString().notEmpty(),
+            body("players.*.role_mantra").isString().notEmpty(),
+            body("players.*.roles").isArray({ min: 1, max: 3 }),
+            body("players.*.roles.*").isString().notEmpty(),
+            body("dry_run").optional().isBoolean({ strict: true }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .importPlayers(
+                        parseInt(req.params.asta_id),
+                        req.body.players,
+                        req.body.dry_run === true
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
         // Aggiorna index_role di un giocatore
         this.router.patch(
             "/:asta_id/players/:player_id",
@@ -121,6 +145,25 @@ class AstaRoutes {
                         req.params.player_id,
                         req.body.role,
                         req.body.new_index_role,
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Sposta un giocatore (singola riga-ruolo) tra classificati e non classificati
+        this.router.patch(
+            "/:asta_id/players/:player_id/classification",
+            param("asta_id").isInt({ min: 1 }),
+            param("player_id").isInt({ min: 1 }),
+            body("classified").isBoolean({ strict: true }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .setPlayerClassified(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.player_id),
+                        req.body.classified === true
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
@@ -170,6 +213,47 @@ class AstaRoutes {
             (req: any, res: any, next: any) => {
                 this.controller
                     .getFantallenatori(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Modifica nome, crediti massimi e limiti per ruolo di un fantallenatore
+        this.router.patch(
+            "/:asta_id/fantallenatori/:fantallenatore_id",
+            param("asta_id").isInt({ min: 1 }),
+            param("fantallenatore_id").isInt({ min: 1 }),
+            body("name").notEmpty().isString(),
+            body("max_crediti").isInt({ min: 0 }),
+            body("classic_p").isInt({ min: 0 }),
+            body("classic_d").isInt({ min: 0 }),
+            body("classic_c").isInt({ min: 0 }),
+            body("classic_a").isInt({ min: 0 }),
+            body("mantra_por_min").isInt({ min: 0 }),
+            body("mantra_por_max").isInt({ min: 0 })
+                .custom((value, { req }) => Number(req.body.mantra_por_min) <= Number(value))
+                .withMessage("mantra_por_min must be <= mantra_por_max"),
+            body("mantra_mov_min").isInt({ min: 0 }),
+            body("mantra_mov_max").isInt({ min: 0 })
+                .custom((value, { req }) => Number(req.body.mantra_mov_min) <= Number(value))
+                .withMessage("mantra_mov_min must be <= mantra_mov_max"),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .updateFantallenatore(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.fantallenatore_id),
+                        req.body.name,
+                        parseInt(req.body.max_crediti),
+                        parseInt(req.body.classic_p),
+                        parseInt(req.body.classic_d),
+                        parseInt(req.body.classic_c),
+                        parseInt(req.body.classic_a),
+                        parseInt(req.body.mantra_por_min),
+                        parseInt(req.body.mantra_por_max),
+                        parseInt(req.body.mantra_mov_min),
+                        parseInt(req.body.mantra_mov_max)
+                    )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
