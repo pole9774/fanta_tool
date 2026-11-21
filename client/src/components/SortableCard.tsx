@@ -140,7 +140,6 @@ function SortableCard(props: any) {
                     rows={3}
                     value={props.editNotes}
                     onChange={(e) => props.setEditNotes(e.target.value)}
-                    required
                   />
                 </Form.Group>
                 :

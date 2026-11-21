@@ -14,10 +14,6 @@ function Home(props: any) {
   const [nFantallenatoriAsta, setNFantallenatoriAsta] = useState<number>(10);
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  const [importSourceAstaId, setImportSourceAstaId] = useState<number>(0);
-  const [importTargetAstaId, setImportTargetAstaId] = useState<number>(0);
-  const [isImporting, setIsImporting] = useState<boolean>(false);
-
   const [dirty, setDirty] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -41,25 +37,6 @@ function Home(props: any) {
       showToast.error("Failed to create the Asta");
     } finally {
       setIsCreating(false);
-    }
-  };
-
-  const handleImportPlayers = async (sourceAstaId: number, targetAstaId: number) => {
-    setIsImporting(true);
-
-    try {
-      const response = await API.importPlayers(sourceAstaId, targetAstaId);
-
-      if (response && response.ok) {
-        showToast.success("Players imported successfully");
-        setDirty(true);
-      } else {
-        showToast.error("Failed to import players");
-      }
-    } catch (error) {
-      showToast.error("Failed to import players");
-    } finally {
-      setIsImporting(false);
     }
   };
 
@@ -156,60 +133,6 @@ function Home(props: any) {
               disabled={isCreating}
             >
               {isCreating ? "Creando..." : "Crea Asta"}
-            </Button>
-          </Form>
-        </Card.Body>
-      </Card>
-
-      {/* importa giocatori da asta source a asta target */}
-      <Card className='mt-5'>
-        <Card.Header as="h5" className="bg-primary text-white">
-          Importa Giocatori
-        </Card.Header>
-        <Card.Body>
-          <Form>
-            <Form.Group controlId={`source-asta`} className="mb-3">
-              <Form.Label>Source Asta</Form.Label>
-              <Form.Select
-                value={importSourceAstaId}
-                onChange={(e) => setImportSourceAstaId(Number(e.target.value))}
-              >
-                {
-                  <>
-                    <option value={0}>-</option>
-                    {
-                      aste.map((asta: Asta) => (
-                        <option value={asta.id}>{"(" + asta.id + ") " + asta.name}</option>
-                      ))
-                    }
-                  </>
-                }
-              </Form.Select>
-            </Form.Group>
-            <Form.Group controlId={`target-asta`} className="mb-3">
-              <Form.Label>Target Asta</Form.Label>
-              <Form.Select
-                value={importTargetAstaId}
-                onChange={(e) => setImportTargetAstaId(Number(e.target.value))}
-              >
-                {
-                  <>
-                    <option value={0}>-</option>
-                    {
-                      aste.map((asta: Asta) => (
-                        <option value={asta.id}>{"(" + asta.id + ") " + asta.name}</option>
-                      ))
-                    }
-                  </>
-                }
-              </Form.Select>
-            </Form.Group>
-            <Button
-              variant="primary"
-              disabled={isImporting}
-              onClick={() => handleImportPlayers(importSourceAstaId, importTargetAstaId)}
-            >
-              {isImporting ? "Importando..." : "Importa"}
             </Button>
           </Form>
         </Card.Body>

@@ -422,57 +422,47 @@ class AstaDAO {
         });
     }
 
-    async importPlayers(source_asta_id: number, target_asta_id: number) {
-        return new Promise<any>((resolve, reject) => {
-            const sql = `
-                INSERT INTO Players (
-                    asta_id,
-                    name,
-                    team,
-                    role,
-                    index_role,
-                    role_mantra,
-                    notes,
-                    taken
-                )
-                SELECT
-                    ?,
-                    P.name,
-                    P.team,
-                    P.role,
-                    P.index_role,
-                    P.role_mantra,
-                    P.notes,
-                    0
-                FROM Players P
-                WHERE P.asta_id = ?
-            `;
-
-            db.run(sql, [target_asta_id, source_asta_id], function (err: Error | null) {
-                if (err) return reject(err);
-
-                resolve({ source_asta_id, target_asta_id });
-            });
-        });
-    }
-
-    // bug: non aggiorno gli indici degli altri giocatori
     async deletePlayer(asta_id: number, player_id: number, player_name: string) {
         return new Promise<any>((resolve, reject) => {
             const delete_player_sql = `
                 DELETE FROM Players WHERE asta_id = ? AND name = ?
             `;
 
+            const compact_indexes_sql = `
+                UPDATE Players
+                SET index_role = R.rn
+                FROM (
+                    SELECT id, ROW_NUMBER() OVER (PARTITION BY role ORDER BY index_role, id) AS rn
+                    FROM Players
+                    WHERE asta_id = ?
+                ) AS R
+                WHERE Players.id = R.id AND Players.index_role <> R.rn
+            `;
+
+            let firstError: Error | null = null;
+            const trackError = (err: Error | null) => {
+                if (err && !firstError) firstError = err;
+            };
+
             db.serialize(() => {
-                db.run("BEGIN TRANSACTION");
+                db.run("BEGIN TRANSACTION", trackError);
 
-                db.run(delete_player_sql, [asta_id, player_name]);
+                db.run(delete_player_sql, [asta_id, player_name], trackError);
 
-                db.run("COMMIT", (err: Error | null) => {
-                    if (err) {
-                        return reject(err);
+                db.run(compact_indexes_sql, [asta_id], (err: Error | null) => {
+                    trackError(err);
+
+                    if (firstError) {
+                        const error = firstError;
+                        return db.run("ROLLBACK", () => reject(error));
                     }
-                    resolve({ asta_id, player_id, player_name });
+
+                    db.run("COMMIT", (commitErr: Error | null) => {
+                        if (commitErr) {
+                            return db.run("ROLLBACK", () => reject(commitErr));
+                        }
+                        resolve({ asta_id, player_id, player_name });
+                    });
                 });
             });
         });

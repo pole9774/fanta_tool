@@ -214,18 +214,6 @@ async function cancelAssign(asta_id: number, taken_id: number, taken_name: strin
     return response;
 }
 
-async function importPlayers(source_asta_id: number, target_asta_id: number) {
-    const response = await fetch(baseURL + `asta/import-from-asta`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ source_asta_id, target_asta_id }),
-    });
-
-    return response;
-}
-
 async function deletePlayer(asta_id: number, player_id: number, player_name: string) {
     const response = await fetch(baseURL + `asta/${asta_id}/delete-player/${player_id}`, {
         method: "DELETE",
@@ -252,7 +240,6 @@ const API = {
     reassignPlayer,
     updateNotes,
     cancelAssign,
-    importPlayers,
     deletePlayer
 };
 

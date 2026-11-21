@@ -141,7 +141,6 @@ function AddPlayerForm(props: any) {
               rows={3}
               value={playerNotes}
               onChange={(e) => setPlayerNotes(e.target.value)}
-              required
               disabled={isCreating}
             />
           </Form.Group>

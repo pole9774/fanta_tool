@@ -87,7 +87,7 @@ class AstaRoutes {
             body("team").notEmpty().isString(),
             body("role").notEmpty().isString(),
             body("role_mantra").notEmpty().isString(),
-            body("notes").notEmpty().isString(),
+            body("notes").isString(),
             body("taken").isInt(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
@@ -236,7 +236,7 @@ class AstaRoutes {
             param("asta_id").isInt({ min: 1 }),
             param("player_id").isInt({ min: 1 }),
             body("player_name").notEmpty().isString(),
-            body("notes").notEmpty().isString(),
+            body("notes").isString(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
@@ -264,23 +264,6 @@ class AstaRoutes {
                         parseInt(req.params.asta_id),
                         parseInt(req.params.taken_id),
                         req.body.taken_name
-                    )
-                    .then((data: any) => res.status(200).json(data))
-                    .catch((error: any) => next(error));
-            }
-        );
-
-        // importa giocatori da asta
-        this.router.post(
-            "/import-from-asta",
-            body("source_asta_id").isInt({ min: 1 }),
-            body("target_asta_id").isInt({ min: 1 }),
-            this.errorHandler.validateRequest,
-            (req: any, res: any, next: any) => {
-                this.controller
-                    .importPlayers(
-                        req.body.source_asta_id,
-                        req.body.target_asta_id
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
