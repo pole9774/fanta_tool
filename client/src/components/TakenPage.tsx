@@ -1,17 +1,42 @@
 import { Button, Form, Card } from "react-bootstrap";
 import { useState } from 'react';
 import { showToast } from '../utilities/toast';
+import { getFantallenatoreStats, quotaTitle } from '../utilities/fantallenatoreStats';
+import { useBalancedColumns } from '../hooks/useBalancedColumns';
 import API from "../API/API";
+import Asta from '../entities/asta';
 import PlayerTaken from "../entities/playerTaken";
 import Fantallenatore from '../entities/fantallenatore';
 import AddFantallenatoreForm from "./AddFantallenatoreForm";
+import EditFantallenatoreForm from "./EditFantallenatoreForm";
+import RoleBadge, { PlayerRoles } from "./RoleBadge";
+import TeamLogo from "./TeamLogo";
 
-function TakenPage(props: any) {
+// Larghezza minima (px) di una colonna fantallenatore: sotto questa soglia gli elenchi vengono divisi su due file
+const MIN_COLUMN_WIDTH = 150;
+const GRID_GAP = 6;
+
+interface TakenPageProps {
+  asta: Asta;
+  asta_id: string | undefined;
+  playersTaken: PlayerTaken[];
+  fantallenatoriAsta: Fantallenatore[];
+  setDirty: (dirty: boolean) => void;
+}
+
+function TakenPage(props: TakenPageProps) {
+
+  // Colonne della griglia: tutti i fantallenatori su una fila se c'è spazio, altrimenti due file (es. 5 + 5)
+  const { ref: gridRef, columns } = useBalancedColumns(props.fantallenatoriAsta.length, MIN_COLUMN_WIDTH, GRID_GAP);
 
   const [assigningPlayerId, setAssigningPlayerId] = useState<number | null>(null);
   const [assignCrediti, setAssignCrediti] = useState<number>(1);
   const [assignFantallenatoreId, setAssignFantallenatoreId] = useState<number>();
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
+
+  const [showAddFantallenatore, setShowAddFantallenatore] = useState<boolean>(false);
+  // Fantallenatore di cui è aperto il modal di modifica (nome, crediti massimi, limiti per ruolo)
+  const [editingFantallenatore, setEditingFantallenatore] = useState<Fantallenatore | null>(null);
 
   const handleAssignClick = (player: PlayerTaken) => {
     setAssigningPlayerId(player.id);
@@ -32,7 +57,7 @@ function TakenPage(props: any) {
       } else {
         showToast.error("Failed to reassign the player");
       }
-    } catch (error) {
+    } catch {
       showToast.error("Failed to reassign the player");
     } finally {
       setIsAssigning(false);
@@ -55,7 +80,7 @@ function TakenPage(props: any) {
       } else {
         showToast.error("Failed to cancel assign the player");
       }
-    } catch (error) {
+    } catch {
       showToast.error("Failed to cancel assign the player");
     }
   };
@@ -112,278 +137,198 @@ function TakenPage(props: any) {
     URL.revokeObjectURL(url);
   };
 
-  type MainType = "classic" | "mantra";
-  type CardColor = "warning" | "success" | "primary" | "info" | "danger" | "secondary";
-
-  type ClassicRole = "P" | "D" | "C" | "A";
-  type MantraRole = "P" | "Dc" | "B" | "Dd" | "Ds" | "E" | "M" | "C" | "T" | "W" | "A" | "Pc";
-  type Role = ClassicRole | MantraRole;
-
-  const colorMap: Record<MainType, Partial<Record<Role, CardColor>>> = {
-    classic: {
-      P: "warning",
-      D: "success",
-      C: "primary",
-      A: "danger",
-    },
-    mantra: {
-      P: "warning",
-      Dc: "success",
-      B: "success",
-      Dd: "success",
-      Ds: "success",
-      E: "primary",
-      M: "primary",
-      C: "info",
-      T: "info",
-      W: "danger",
-      A: "danger",
-      Pc: "danger",
-    },
-  };
-
-  function getCardColor(playerRole: string): CardColor {
-    const type = props.asta.type as MainType;
-    const role = playerRole as Role;
-    return colorMap[type]?.[role] ?? "secondary";
-  }
-
-  function getRoleTakenNumber(fantallenatore: Fantallenatore, role: string): number {
-    var count: number = 0;
-    
-    for (const player of props.playersTaken) {
-      if (player.fantallenatore_id == fantallenatore.id) {
-        if (props.asta.type == "classic") {
-          if (player.role == role) {
-            count++;
-          }
-        } else {
-          if (role == "P") {
-            if (player.role == "P") {
-              count++;
-            }
-          } else {
-            if (player.role != "P") {
-              count++;
-            }
-          }
-        }
-      }
-    }
-
-    return count;
-  }
-
   return (
     <>
+      {/* Toolbar */}
+      <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <span className="text-secondary small">Clicca sull'intestazione di un fantallenatore per modificarlo, sui crediti di un giocatore per modificarne l'acquisto.</span>
+        <div className="ms-auto d-flex gap-2">
+          <Button variant="success" size="sm" onClick={() => setShowAddFantallenatore(true)}>
+            <i className="bi bi-person-plus me-1"></i>Fantallenatore
+          </Button>
+          <Button variant="outline-secondary" size="sm" onClick={handleExportFantallenatoriWithPlayersTxt}>
+            <i className="bi bi-download me-1"></i>Esporta acquisti
+          </Button>
+        </div>
+      </div>
+
+      {
+        props.fantallenatoriAsta.length == 0 ?
+          <p className="text-secondary">Nessun fantallenatore. Aggiungine uno con "Fantallenatore".</p>
+          : <></>
+      }
+
       <div
-        className="d-flex flex-row flex-nowrap gap-1 overflow-auto pb-2"
-        style={{ WebkitOverflowScrolling: "touch" }}
+        ref={gridRef}
+        className="pb-4"
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+          gap: GRID_GAP,
+        }}
       >
         {
-          props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-            <Card
-              key={fantallenatore.id}
-              className="mb-0 px-0"
-              style={{
-                width: "188px",
-                flex: "0 0 188px",
-              }}
-            >
-              <Card.Body className="px-2 pt-2">
-                <Card.Title className="fs-4 px-1 fw-semibold">{fantallenatore.name}</Card.Title>
-                <p className="mb-3 px-1">
-                  {fantallenatore.max_crediti - fantallenatore.crediti_spent}🪙 {"(tot. " + fantallenatore.max_crediti + ")"}
-                </p>
-                {
-                  props.playersTaken.map((player: PlayerTaken) => (
-                    player.fantallenatore_id == fantallenatore.id ?
-                      <Card className="mb-0">
-                        <Card.Body className="py-1 px-2">
-                          <div className="d-flex justify-content-between align-items-start gap-3">
-                            <div className="flex-grow-1">
-                              <Card.Title className="fs-6 fw-semibold">
-                                {player.name}
-                              </Card.Title>
-                              <Card.Subtitle className="small">
-                                {
-                                  props.asta.type == "classic" ?
-                                    <span
-                                      className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(player.role)} text-white`}
-                                      style={{ width: 16, height: 16, fontSize: "0.70rem" }}
-                                    >
-                                      {player.role}
-                                    </span>
-                                    : (
-                                      player.role_mantra
-                                        .split("/")
-                                        .map((r: string) => r.trim())
-                                        .filter(Boolean)
-                                        .map((r: string) => (
-                                          <span
-                                            key={`${player.id}-${r}`}
-                                            className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-1`}
-                                            style={{ minHeight: 16, fontSize: "0.70rem" }}
-                                          >
-                                            {r}
-                                          </span>
-                                        ))
-                                    )
-                                }
-                                <span className="d-inline-flex align-items-center gap-1">
-                                  <img
-                                    src={`/teams/${player.team}.png`}
-                                    alt={player.team}
-                                    style={{ width: 16, height: 16, objectFit: "contain" }}
-                                    className="pt-1 mx-1"
-                                    onError={(e) => {
-                                      e.currentTarget.src = "/teams/default.png";
-                                    }}
-                                  />
-                                  <span>{player.crediti}</span>
-                                </span>
-                              </Card.Subtitle>
-                              {
-                                player.id == assigningPlayerId ?
-                                  <div className="mt-3" style={{ width: 140 }}>
-                                    <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-2">
-                                      <Form.Select
-                                        value={assignFantallenatoreId}
-                                        onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
-                                      >
-                                        {
-                                          props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-                                            <option value={fantallenatore.id}>{fantallenatore.name}</option>
-                                          ))
-                                        }
-                                      </Form.Select>
-                                    </Form.Group>
-                                    <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-2">
-                                      <Form.Control
-                                        type="number"
-                                        placeholder="Insert crediti"
-                                        step={1}
-                                        value={assignCrediti}
-                                        onChange={(e) => setAssignCrediti(Number(e.target.value))}
-                                        required
-                                      />
-                                    </Form.Group>
-                                    <div className="d-flex flex-row gap-2 justify-content-end">
-                                      <Button
-                                        variant="outline-danger"
-                                        size="sm"
-                                        onClick={() => handleCancelAssign(player)}
-                                      >
-                                        ✕
-                                      </Button>
-                                      <Button
-                                        variant="success"
-                                        size="sm"
-                                        onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
-                                        disabled={isAssigning}
-                                      >
-                                        {isAssigning ? "..." : "✓"}
-                                      </Button>
-                                      <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={() => setAssigningPlayerId(null)}
-                                      >
-                                        ✕
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  : <></>
-                              }
+          props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => {
+            const stats = getFantallenatoreStats(fantallenatore, props.playersTaken, props.asta.type);
+            const players = props.playersTaken.filter((player: PlayerTaken) => player.fantallenatore_id == fantallenatore.id);
+
+            return (
+              <Card key={fantallenatore.id} className="mb-0" style={{ minWidth: 0 }}>
+                <Card.Body className="p-1">
+                  {/* Intestazione: nome, crediti, puntata massima, quote. Cliccabile per modificare il fantallenatore */}
+                  <div
+                    className="taken-column-header mb-1"
+                    role="button"
+                    title="Modifica fantallenatore"
+                    onClick={() => setEditingFantallenatore(fantallenatore)}
+                  >
+                    <div className="d-flex align-items-center gap-1">
+                      <span className="fs-5 fw-semibold text-truncate flex-grow-1" style={{ minWidth: 0 }} title={fantallenatore.name}>
+                        {fantallenatore.name}
+                      </span>
+                      <i className="bi bi-pencil text-secondary small flex-shrink-0"></i>
+                    </div>
+                    <div className="d-flex align-items-baseline flex-wrap column-gap-2">
+                      <span className="fs-4 fw-bold">
+                        {stats.remaining}<i className="bi bi-coin ms-1 text-warning" style={{ fontSize: "0.9rem" }}></i>
+                      </span>
+                      <span className="small text-secondary">tot. {fantallenatore.max_crediti}</span>
+                      <span className="small max-bid" title="Puntata massima: crediti residui meno 1 per ogni altro giocatore ancora da acquistare">
+                        max {stats.maxBid}
+                      </span>
+                    </div>
+                    <div className="d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small mt-1">
+                      {
+                        stats.quotas.map((q) => (
+                          <span key={q.role} className="d-inline-flex align-items-center gap-1 text-nowrap" title={quotaTitle(q)}>
+                            <RoleBadge astaType={props.asta.type} role={q.role} size="sm" />
+                            {q.taken}/{q.max}
+                            {q.min != undefined ? <span className="text-secondary">(min {q.min})</span> : <></>}
+                          </span>
+                        ))
+                      }
+                    </div>
+                  </div>
+
+                  {
+                    players.map((player: PlayerTaken) => (
+                      <div key={player.id} className="taken-row">
+                        {/* riga unica: nome, ruoli, logo squadra, crediti (cliccabili per modificare l'acquisto) */}
+                        <div className="d-flex align-items-center gap-1" style={{ fontSize: "0.78rem", lineHeight: 1.2 }}>
+                          <span
+                            className="text-truncate fw-semibold flex-grow-1"
+                            style={{ minWidth: 0 }}
+                            title={player.name}
+                          >
+                            {player.name}
+                          </span>
+                          <PlayerRoles astaType={props.asta.type} role={player.role} roleMantra={player.role_mantra} size="sm" />
+                          <TeamLogo team={player.team} size={14} />
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="p-0 text-decoration-none text-end flex-shrink-0 fw-semibold"
+                            style={{ minWidth: "2.1em", fontSize: "inherit", lineHeight: "inherit" }}
+                            title="Modifica acquisto"
+                            onClick={() =>
+                              player.id == assigningPlayerId ? setAssigningPlayerId(null) : handleAssignClick(player)
+                            }
+                          >
+                            {player.crediti}
+                          </Button>
+                        </div>
+                        {
+                          player.id == assigningPlayerId ?
+                            <div className="mt-2">
+                              <Form.Group controlId={`assign-fantallenatore-${player.id}`} className="mb-1">
+                                <Form.Select
+                                  size="sm"
+                                  value={assignFantallenatoreId}
+                                  onChange={(e) => setAssignFantallenatoreId(Number(e.target.value))}
+                                >
+                                  {
+                                    props.fantallenatoriAsta.map((f: Fantallenatore) => (
+                                      <option key={f.id} value={f.id}>{f.name}</option>
+                                    ))
+                                  }
+                                </Form.Select>
+                              </Form.Group>
+                              <Form.Group controlId={`assign-crediti-${player.id}`} className="mb-1">
+                                <Form.Control
+                                  size="sm"
+                                  type="number"
+                                  placeholder="Insert crediti"
+                                  step={1}
+                                  value={assignCrediti}
+                                  onChange={(e) => setAssignCrediti(Number(e.target.value))}
+                                  required
+                                />
+                              </Form.Group>
+                              <div className="d-flex flex-row gap-1 justify-content-end mb-1">
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  title="Annulla l'acquisto (il giocatore torna disponibile)"
+                                  onClick={() => handleCancelAssign(player)}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </Button>
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  title="Salva"
+                                  onClick={() => handleSaveAssign(player.id, assignFantallenatoreId ?? 0, assignCrediti)}
+                                  disabled={isAssigning}
+                                >
+                                  {isAssigning ? "..." : <i className="bi bi-check-lg"></i>}
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  title="Chiudi"
+                                  onClick={() => setAssigningPlayerId(null)}
+                                >
+                                  <i className="bi bi-x-lg"></i>
+                                </Button>
+                              </div>
                             </div>
-                            <div style={{ width: 0, height: 0 }} className="d-flex flex-column align-items-end">
-                              {
-                                player.id != assigningPlayerId ?
-                                  <Button
-                                    variant="link"
-                                    size="sm"
-                                    className="p-0 text-decoration-none mt-4"
-                                    onClick={() => handleAssignClick(player)}
-                                  >
-                                    ▾
-                                  </Button>
-                                  :
-                                  <></>
-                              }
-                            </div>
-                          </div>
-                        </Card.Body>
-                      </Card>
+                            : <></>
+                        }
+                      </div>
+                    ))
+                  }
+                  {
+                    players.length == 0 ?
+                      <div className="taken-row small text-secondary">Nessun acquisto</div>
                       : <></>
-                  ))
-                }
-                {
-                  props.asta.type == "classic" ?
-                    <p className="mb-0 mt-4 px-1 small">
-                      <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white me-2`}
-                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
-                      >
-                        P
-                      </span>
-                      {getRoleTakenNumber(fantallenatore, "P") + " / " + fantallenatore.classic_p}
-                      <br />
-                      <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("D")} text-white me-2`}
-                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
-                      >
-                        D
-                      </span>
-                      {getRoleTakenNumber(fantallenatore, "D") + " / " + fantallenatore.classic_d}
-                      <br />
-                      <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("C")} text-white me-2`}
-                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
-                      >
-                        C
-                      </span>
-                      {getRoleTakenNumber(fantallenatore, "C") + " / " + fantallenatore.classic_c}
-                      <br />
-                      <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("A")} text-white me-2`}
-                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
-                      >
-                        A
-                      </span>
-                      {getRoleTakenNumber(fantallenatore, "A") + " / " + fantallenatore.classic_a}
-                    </p>
-                    :
-                    <p className="mb-0 mt-4 px-1 small">
-                      <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor("P")} text-white me-1`}
-                        style={{ width: 16, height: 16, fontSize: "0.70rem" }}
-                      >
-                        P
-                      </span>
-                      {getRoleTakenNumber(fantallenatore, "P") + " (min " + fantallenatore.mantra_por_min}; max {fantallenatore.mantra_por_max + ")"}
-                      <br />
-                      <span
-                        className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${"success"} text-white px-1 me-1`}
-                        style={{ minHeight: 16, fontSize: "0.70rem" }}
-                      >
-                        M
-                      </span>
-                      {getRoleTakenNumber(fantallenatore, "mov") + " (min " + fantallenatore.mantra_mov_min}; max {fantallenatore.mantra_mov_max + ")"}
-                    </p>
-                }
-              </Card.Body>
-            </Card>
-          ))
+                  }
+                </Card.Body>
+              </Card>
+            );
+          })
         }
       </div>
-      <AddFantallenatoreForm setDirty={props.setDirty} asta_id={props.asta_id} asta={props.asta} />
-      <Button
-        variant="secondary"
-        className="my-5"
-        onClick={handleExportFantallenatoriWithPlayersTxt}
-      >
-        Esporta Acquisti
-      </Button>
+
+      <AddFantallenatoreForm
+        show={showAddFantallenatore}
+        onHide={() => setShowAddFantallenatore(false)}
+        setDirty={props.setDirty}
+        asta_id={props.asta_id}
+        asta={props.asta}
+      />
+      {
+        editingFantallenatore ?
+          <EditFantallenatoreForm
+            key={`edit-${editingFantallenatore.id}`}
+            asta={props.asta}
+            asta_id={props.asta_id ?? ""}
+            fantallenatore={editingFantallenatore}
+            nPlayersTaken={props.playersTaken.filter((p: PlayerTaken) => p.fantallenatore_id == editingFantallenatore.id).length}
+            setDirty={props.setDirty}
+            onClose={() => setEditingFantallenatore(null)}
+          />
+          : <></>
+      }
     </>
   );
 }

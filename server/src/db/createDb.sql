@@ -17,7 +17,7 @@ CREATE TABLE Players (
     name TEXT NOT NULL,
     team TEXT NOT NULL,
     role TEXT NOT NULL,
-    index_role INTEGER NOT NULL,
+    index_role INTEGER, -- posizione nella lista del ruolo (1..N); NULL = giocatore non classificato
     role_mantra TEXT NOT NULL,
     notes TEXT NOT NULL,
     taken INTEGER NOT NULL

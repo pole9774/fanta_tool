@@ -1,16 +1,59 @@
-import { Card, Button, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from "react";
+import Asta from "../entities/asta";
+import Player from "../entities/player";
 import Fantallenatore from '../entities/fantallenatore';
+import { PlayerRoles } from "./RoleBadge";
+import TeamLogo from "./TeamLogo";
 
-function SortableCard(props: any) {
+// Chi ha acquistato il giocatore e per quanto
+export interface PlayerOwner {
+  fantallenatoreName: string;
+  crediti: number;
+}
 
-  const [expandedNotes, setExpandedNotes] = useState<Record<number, boolean>>({});
+interface SortableCardProps {
+  player: Player;
+  asta: Asta;
+  // false per i giocatori non classificati: niente drag&drop
+  sortable: boolean;
+  owner?: PlayerOwner;
 
-  const toggleNotes = (playerId: number) => {
-    setExpandedNotes((prev) => ({ ...prev, [playerId]: !prev[playerId] }));
-  };
+  editingPlayerId: number | null;
+  editNotes: string;
+  isUpdating: boolean;
+  setEditNotes: (notes: string) => void;
+  onEditClick: (player: Player) => void;
+  onSaveEdit: (playerId: number, playerName: string) => void;
+  onCancelEdit: () => void;
+  onDeletePlayer: (playerId: number, playerName: string) => void;
+  onToggleClassified: (player: Player) => void;
+
+  assigningPlayerId: number | null;
+  assignCrediti: number;
+  setAssignCrediti: (crediti: number) => void;
+  assignFantallenatoreId: number | undefined;
+  setAssignFantallenatoreId: (id: number | undefined) => void;
+  isAssigning: boolean;
+  onAssignClick: (player: Player) => void;
+  onSaveAssign: (playerId: number, playerName: string, fantallenatoreId: number, crediti: number) => void;
+  onCancelAssign: () => void;
+  fantallenatoriAsta: Fantallenatore[];
+  // puntata massima per fantallenatore (id -> crediti)
+  maxBidById: Record<number, number>;
+}
+
+// Riga della lista giocatori: posizione, nome, ruoli, squadra, note e azioni (assegna / modifica)
+function SortableCard(props: SortableCardProps) {
+
+  const player = props.player;
+  const isTaken = player.taken != 0;
+  const isEditing = props.editingPlayerId == player.id;
+  const isAssigning = props.assigningPlayerId == player.id && !isTaken;
+
+  const [notesExpanded, setNotesExpanded] = useState<boolean>(false);
 
   const {
     attributes,
@@ -19,297 +62,198 @@ function SortableCard(props: any) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: props.player.id });
+  } = useSortable({ id: player.id, disabled: !props.sortable });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
-    backgroundColor: props.player.taken == 0 ? "#212529" : "#323335",
-    color: props.player.taken == 0 ? "#fff" : "#5c5c5c"
+    opacity: isDragging ? 0.5 : undefined,
   };
 
-  type MainType = "classic" | "mantra";
-  type CardColor = "warning" | "success" | "primary" | "info" | "danger" | "secondary";
-
-  type ClassicRole = "P" | "D" | "C" | "A";
-  type MantraRole = "P" | "Dc" | "B" | "Dd" | "Ds" | "E" | "M" | "C" | "T" | "W" | "A" | "Pc";
-  type Role = ClassicRole | MantraRole;
-
-  const colorMap: Record<MainType, Partial<Record<Role, CardColor>>> = {
-    classic: {
-      P: "warning",
-      D: "success",
-      C: "primary",
-      A: "danger",
-    },
-    mantra: {
-      P: "warning",
-      Dc: "success",
-      B: "success",
-      Dd: "success",
-      Ds: "success",
-      E: "primary",
-      M: "primary",
-      C: "info",
-      T: "info",
-      W: "danger",
-      A: "danger",
-      Pc: "danger",
-    },
+  const handleSubmitAssign = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (props.assignFantallenatoreId == undefined) return;
+    props.onSaveAssign(player.id, player.name, props.assignFantallenatoreId, props.assignCrediti);
   };
 
-  function getCardColor(playerRole: string): CardColor {
-    const type = props.asta.type as MainType;
-    const role = playerRole as Role;
-    return colorMap[type]?.[role] ?? "secondary";
-  }
+  const selectedMaxBid = props.assignFantallenatoreId != undefined ? props.maxBidById[props.assignFantallenatoreId] : undefined;
 
   return (
-    <Card
+    <div
       ref={setNodeRef}
       style={style}
-      className="mb-1"
+      className={`player-row d-flex align-items-center gap-2 ${isTaken && !isEditing ? "taken" : ""}`}
     >
-      <Card.Body className="py-1 px-3">
-        <div className="d-flex align-items-start gap-3">
-          <div style={{ flex: "0 0 200px" }}>
-            <Card.Title className="d-flex align-items-center gap-2 fs-6 mt-1 fw-semibold">
-              <span
-                className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white`}
-                style={{ width: 16, height: 16, fontSize: "0.67rem" }}
-              >
-                {props.player.index_role}
-              </span>
-              {
-                <span>{props.player.name}</span>
-              }
-            </Card.Title>
-            <Card.Subtitle className="small">
-              {
-                props.asta.type == "classic" ?
-                  <span
-                    className={`d-inline-flex align-items-center justify-content-center rounded-circle bg-${getCardColor(props.player.role)} text-white`}
-                    style={{ width: 16, height: 16, fontSize: "0.67rem" }}
-                  >
-                    {props.player.role}
-                  </span>
-                  : (
-                    props.player.role_mantra
-                      .split("/")
-                      .map((r: string) => r.trim())
-                      .filter(Boolean)
-                      .map((r: string) => (
-                        <span
-                          key={`${props.player.id}-${r}`}
-                          className={`d-inline-flex align-items-center justify-content-center rounded-pill bg-${getCardColor(r)} text-white px-1`}
-                          style={{ minHeight: 16, fontSize: "0.67rem" }}
-                        >
-                          {r}
-                        </span>
-                      ))
-                  )
-              }
-              {
-                <span className="d-inline-flex align-items-center gap-1">
-                  <img
-                    src={`/teams/${props.player.team}.png`}
-                    alt={props.player.team}
-                    style={{ width: 16, height: 16, objectFit: "contain" }}
-                    className="pt-1 mx-1"
-                    onError={(e) => {
-                      e.currentTarget.src = "/teams/default.png";
-                    }}
-                  />
-                  {
-                    props.player.taken == 1 ?
-                    <span> {props.player.team}</span>
-                    :
-                    <span className="text-muted"> {props.player.team}</span>
-                  }
-                </span>
-              }
-            </Card.Subtitle>
-          </div>
-          <div style={{ flex: "1 1 auto", minWidth: 0 }} className="small">
-            {
-              props.editingPlayerId == props.player.id ?
-                <Form.Group controlId={`edit-notes-${props.player.id}`} className="mb-2">
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={props.editNotes}
-                    onChange={(e) => props.setEditNotes(e.target.value)}
-                    required
-                  />
-                </Form.Group>
-                :
-                <Card.Text
-                  className="my-1"
-                  style={
-                    expandedNotes[props.player.id]
-                      ? { whiteSpace: "pre-wrap" }
-                      : {
-                        whiteSpace: "pre-wrap",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }
-                  }
-                >
-                  {props.player.notes}
-                </Card.Text>
-            }
-          </div>
-          <div
-            style={{ flex: "0 0 250px" }}
-            className="d-flex flex-column align-items-end gap-1"
-          >
-            <div className="d-flex flex-wrap justify-content-end gap-1 my-2">
-              {
-                props.editingPlayerId == props.player.id ?
-                  <>
-                    <Button
-                      variant="success"
-                      size="sm"
-                      className="me-1"
-                      onClick={() => props.onSaveEdit(props.player.id, props.player.name)}
-                      disabled={props.isUpdating}
-                    >
-                      {props.isUpdating ? "Salvando..." : "Salva"}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="me-1"
-                      onClick={() => props.onCancelEdit()}
-                    >
-                      Annulla
-                    </Button>
-                    {
-                      props.player.taken == 0 ?
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => props.onDeletePlayer(props.player.id, props.player.name)}
-                        >
-                          Elimina
-                        </Button>
-                        : <></>
-                    }
-                  </>
-                  :
-                  <>
-                    {
-                      props.assigningPlayerId != props.player.id ?
-                        <>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="p-0 text-decoration-none me-2"
-                            onClick={() => toggleNotes(props.player.id)}
-                          >
-                            {expandedNotes[props.player.id] ? "▴ Nascondi" : "▾ Espandi"}
-                          </Button>
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            className="me-1"
-                            onClick={() => props.onEditClick(props.player)}
-                          >
-                            Edit
-                          </Button>
-                        </>
-                        : <></>
-                    }
-                  </>
-              }
-              {
-                (props.assigningPlayerId == props.player.id && props.player.taken == 0) ?
-                  <>
-                    <Form.Group controlId={`assign-fantallenatore-${props.player.id}`} className="mb-1">
-                      <Form.Select
-                        style={{ width: 200 }}
-                        value={props.assignFantallenatoreId}
-                        onChange={(e) => props.setAssignFantallenatoreId(Number(e.target.value))}
-                      >
-                        {
-                          <>
-                            <option value={undefined}>-</option>
-                            {
-                              props.fantallenatoriAsta.map((fantallenatore: Fantallenatore) => (
-                                <option value={fantallenatore.id}>{fantallenatore.name}</option>
-                              ))
-                            }
-                          </>
-                        }
-                      </Form.Select>
-                    </Form.Group>
-                    <Form.Group controlId={`assign-crediti-${props.player.id}`} className="mb-2">
-                      <Form.Control
-                        type="number"
-                        placeholder="Insert crediti"
-                        step={1}
-                        style={{ width: 200 }}
-                        value={props.assignCrediti}
-                        onChange={(e) => props.setAssignCrediti(Number(e.target.value))}
-                        required
-                      />
-                    </Form.Group>
-                    <Button
-                      variant="success"
-                      size="sm"
-                      className="me-2 mb-1"
-                      onClick={() => props.onSaveAssign(props.player.id, props.player.name, props.assignFantallenatoreId, props.assignCrediti)}
-                      disabled={props.isAssigning}
-                    >
-                      {props.isAssigning ? "Salvando..." : "Salva"}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="mb-1"
-                      onClick={props.onCancelAssign}
-                    >
-                      Annulla
-                    </Button>
-                  </>
-                  :
-                  <>
-                    {
-                      props.player.taken == 0 && props.editingPlayerId != props.player.id ?
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          onClick={() => props.onAssignClick(props.player)}
-                        >
-                          Assegna
-                        </Button>
-                        : <></>
-                    }
-                  </>
-              }
-              <div
-                {...attributes}
-                {...listeners}
-                style={{
-                  cursor: 'grab',
-                  paddingTop: '4px',
-                  paddingBottom: '2px',
-                  paddingLeft: '8px',
-                  paddingRight: '1px',
-                  fontSize: '16px',
-                }}
-                title="Drag to reorder"
-              >
-                ⠿
-              </div>
-            </div>
-          </div>
+      {/* maniglia drag&drop; per i non classificati resta solo come spazio invisibile, per allineare le righe */}
+      <span
+        {...(props.sortable ? attributes : {})}
+        {...(props.sortable ? listeners : {})}
+        className="drag-handle flex-shrink-0"
+        style={{ visibility: props.sortable ? 'visible' : 'hidden' }}
+        title={props.sortable ? "Trascina per riordinare" : undefined}
+      >
+        <i className="bi bi-grip-vertical"></i>
+      </span>
+
+      <span className="rank flex-shrink-0">{player.index_role ?? "–"}</span>
+
+      {/* nome, ruoli, squadra */}
+      <div className="flex-shrink-0" style={{ width: 230, minWidth: 0 }}>
+        <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
+          <span className="fw-semibold text-truncate" title={player.name}>{player.name}</span>
+          <PlayerRoles astaType={props.asta.type} role={player.role} roleMantra={player.role_mantra} />
+          {isTaken && !isEditing ? <TeamLogo team={player.team} size={14} /> : <></>}
         </div>
-      </Card.Body>
-    </Card>
+        {
+          !isTaken || isEditing ?
+            <div className="d-flex align-items-center gap-1 small text-secondary">
+              <TeamLogo team={player.team} size={14} />
+              <span className="text-truncate">{player.team}</span>
+            </div>
+            : <></>
+        }
+      </div>
+
+      {/* note */}
+      <div className="flex-grow-1 small" style={{ minWidth: 0 }}>
+        {
+          isEditing ?
+            <Form.Control
+              as="textarea"
+              rows={3}
+              size="sm"
+              autoFocus
+              placeholder="Note"
+              value={props.editNotes}
+              onChange={(e) => props.setEditNotes(e.target.value)}
+            />
+            :
+            (player.notes ?? "") != "" ?
+              <div
+                className={`notes ${notesExpanded ? "" : isTaken ? "clamped-1" : "clamped"}`}
+                title={notesExpanded ? "Clicca per ridurre" : "Clicca per espandere"}
+                onClick={() => setNotesExpanded((e) => !e)}
+              >
+                {player.notes}
+              </div>
+              : <></>
+        }
+      </div>
+
+      {/* acquirente */}
+      {
+        isTaken && props.owner && !isEditing ?
+          <span className="owner-badge flex-shrink-0" title="Acquistato da">
+            <i className="bi bi-arrow-right-short"></i>{props.owner.fantallenatoreName} · {props.owner.crediti}
+          </span>
+          : <></>
+      }
+
+      {/* azioni */}
+      <div className="d-flex align-items-center justify-content-end gap-1 flex-shrink-0">
+        {
+          isEditing ?
+            <>
+              <Button
+                variant="success"
+                size="sm"
+                onClick={() => props.onSaveEdit(player.id, player.name)}
+                disabled={props.isUpdating}
+              >
+                {props.isUpdating ? "Salvando..." : "Salva"}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => props.onCancelEdit()}>
+                Annulla
+              </Button>
+              <Button
+                variant="outline-warning"
+                size="sm"
+                onClick={() => props.onToggleClassified(player)}
+              >
+                {player.index_role == null ? "▲ Classifica" : "▼ Non classificato"}
+              </Button>
+              {
+                !isTaken ?
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    title="Elimina giocatore"
+                    onClick={() => props.onDeletePlayer(player.id, player.name)}
+                  >
+                    <i className="bi bi-trash"></i>
+                  </Button>
+                  : <></>
+              }
+            </>
+            :
+            isAssigning ?
+              <Form onSubmit={handleSubmitAssign} className="d-flex align-items-center gap-1">
+                <Form.Select
+                  size="sm"
+                  style={{ width: 170 }}
+                  aria-label="Fantallenatore"
+                  value={props.assignFantallenatoreId ?? ""}
+                  onChange={(e) => props.setAssignFantallenatoreId(e.target.value == "" ? undefined : Number(e.target.value))}
+                >
+                  <option value="">Fantallenatore...</option>
+                  {
+                    props.fantallenatoriAsta.map((f: Fantallenatore) => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))
+                  }
+                </Form.Select>
+                <Form.Control
+                  size="sm"
+                  type="number"
+                  aria-label="Crediti"
+                  placeholder="Crediti"
+                  min={0}
+                  step={1}
+                  style={{ width: 80 }}
+                  value={props.assignCrediti}
+                  onChange={(e) => props.setAssignCrediti(Number(e.target.value))}
+                  required
+                />
+                {
+                  selectedMaxBid != undefined ?
+                    <span className="max-bid small mx-1" title="Puntata massima del fantallenatore">max {selectedMaxBid}</span>
+                    : <></>
+                }
+                <Button
+                  variant="success"
+                  size="sm"
+                  type="submit"
+                  title="Conferma acquisto"
+                  disabled={props.isAssigning || props.assignFantallenatoreId == undefined}
+                >
+                  {props.isAssigning ? "..." : <i className="bi bi-check-lg"></i>}
+                </Button>
+                <Button variant="secondary" size="sm" title="Annulla" onClick={props.onCancelAssign}>
+                  <i className="bi bi-x-lg"></i>
+                </Button>
+              </Form>
+              :
+              <>
+                {
+                  !isTaken ?
+                    <Button variant="outline-success" size="sm" onClick={() => props.onAssignClick(player)}>
+                      <i className="bi bi-hammer me-1"></i>Assegna
+                    </Button>
+                    : <></>
+                }
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  className="icon-btn"
+                  title="Modifica note / classificazione"
+                  onClick={() => props.onEditClick(player)}
+                >
+                  <i className="bi bi-pencil"></i>
+                </Button>
+              </>
+        }
+      </div>
+    </div>
   );
 }
 

@@ -23,12 +23,45 @@ class AstaController {
         return this.astaDAO.createAsta(name, type, n_fantallenatori);
     }
 
+    async updateAsta(asta_id: number, name: string, n_fantallenatori: number) {
+        return this.astaDAO.updateAsta(asta_id, name, n_fantallenatori);
+    }
+
+    async getAstaCounts(asta_id: number) {
+        return this.astaDAO.getAstaCounts(asta_id);
+    }
+
+    async deleteAsta(asta_id: number) {
+        return this.astaDAO.deleteAsta(asta_id);
+    }
+
     async createPlayer(asta_id: number, name: string, team: string, role: string, role_mantra: string, notes: string, taken: number) {
         return this.astaDAO.createPlayer(asta_id, name, team, role, role_mantra, notes, taken);
     }
 
     async updatePlayerIndexRole(asta_id: number, player_id: number, role: string, newIndexRole: number) {
         return this.astaDAO.updatePlayerIndexRole(asta_id, player_id, role, newIndexRole);
+    }
+
+    async setPlayerClassified(asta_id: number, player_id: number, classified: boolean) {
+        return this.astaDAO.setPlayerClassified(asta_id, player_id, classified);
+    }
+
+    async importPlayers(
+        asta_id: number,
+        players: { name: string, team: string, role_mantra: string, roles: string[] }[],
+        dry_run: boolean
+    ) {
+        return this.astaDAO.importPlayers(asta_id, players, dry_run);
+    }
+
+    async importStatsNotes(
+        asta_id: number,
+        season: string,
+        stats: { name: string, pv: number, mv: number, fm: number, g: number, gs: number, a: number }[],
+        dry_run: boolean
+    ) {
+        return this.astaDAO.importStatsNotes(asta_id, season, stats, dry_run);
     }
 
     async createFantallenatore(
@@ -45,6 +78,27 @@ class AstaController {
         mantra_mov_max: number
     ) {
         return this.astaDAO.createFantallenatore(asta_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max);
+    }
+
+    async updateFantallenatore(
+        asta_id: number,
+        fantallenatore_id: number,
+        name: string,
+        max_crediti: number,
+        classic_p: number,
+        classic_d: number,
+        classic_c: number,
+        classic_a: number,
+        mantra_por_min: number,
+        mantra_por_max: number,
+        mantra_mov_min: number,
+        mantra_mov_max: number
+    ) {
+        return this.astaDAO.updateFantallenatore(asta_id, fantallenatore_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max);
+    }
+
+    async deleteFantallenatore(asta_id: number, fantallenatore_id: number) {
+        return this.astaDAO.deleteFantallenatore(asta_id, fantallenatore_id);
     }
 
     async getFantallenatori(asta_id: number) {
@@ -69,10 +123,6 @@ class AstaController {
 
     async cancelAssign(asta_id: number, taken_id: number, taken_name: string) {
         return this.astaDAO.cancelAssign(asta_id, taken_id, taken_name);
-    }
-
-    async importPlayers(source_asta_id: number, target_asta_id: number) {
-        return this.astaDAO.importPlayers(source_asta_id, target_asta_id);
     }
 
      async deletePlayer(asta_id: number, player_id: number, player_name: string) {

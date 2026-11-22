@@ -1,9 +1,19 @@
 import { useState } from 'react';
-import { Button, Form, Card } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import { showToast } from '../utilities/toast';
 import API from "../API/API";
+import Asta from '../entities/asta';
 
-function AddFantallenatoreForm(props: any) {
+interface AddFantallenatoreFormProps {
+  show: boolean;
+  onHide: () => void;
+  asta: Asta;
+  asta_id: string | undefined;
+  setDirty: (dirty: boolean) => void;
+}
+
+// Modal per aggiungere un fantallenatore all'asta
+function AddFantallenatoreForm(props: AddFantallenatoreFormProps) {
 
   const [nameFantallenatore, setNameFantallenatore] = useState<string>("");
   const [maxCreditiFantallenatore, setMaxCreditiFantallenatore] = useState<number>(1000);
@@ -18,7 +28,7 @@ function AddFantallenatoreForm(props: any) {
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  const handleSubmit = async (event: React.SubmitEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsCreating(true);
 
@@ -30,151 +40,80 @@ function AddFantallenatoreForm(props: any) {
         setNameFantallenatore("");
         setMaxCreditiFantallenatore(1000);
         props.setDirty(true);
+        props.onHide();
       } else {
         showToast.error("Failed to create the Fantallenatore");
       }
-    } catch (error) {
+    } catch {
       showToast.error("Failed to create the Fantallenatore");
     } finally {
       setIsCreating(false);
     }
   };
 
+  const numberField = (id: string, label: string, value: number, setValue: (v: number) => void) => (
+    <Form.Group controlId={id}>
+      <Form.Label className="mb-1 small text-secondary">{label}</Form.Label>
+      <Form.Control
+        type="number"
+        step={1}
+        value={value}
+        onChange={(e) => setValue(Number(e.target.value))}
+        required
+      />
+    </Form.Group>
+  );
+
   return (
-    <Card className="mt-5">
-      <Card.Header as="h5" className="bg-secondary text-white">
-        Aggiungi Fantallenatore
-      </Card.Header>
-      <Card.Body>
-        <Form onSubmit={handleSubmit}>
-          <Form.Group controlId="name" className="mb-3">
-            <Form.Label>Nome</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Inserisci nome fantallenatore"
-              value={nameFantallenatore}
-              onChange={(e) => setNameFantallenatore(e.target.value)}
-              required
-              disabled={isCreating}
-            />
-          </Form.Group>
-          <Form.Group controlId="n_fantallenatori" className="mb-3">
-            <Form.Label>Max Crediti</Form.Label>
-            <Form.Control
-              type="number"
-              placeholder="Inserisci max crediti"
-              step={1}
-              value={maxCreditiFantallenatore}
-              onChange={(e) => setMaxCreditiFantallenatore(Number(e.target.value))}
-              required
-            />
-          </Form.Group>
+    <Modal show={props.show} onHide={props.onHide} centered>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Header closeButton>
+          <Modal.Title>Aggiungi fantallenatore</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-grid gap-3" style={{ gridTemplateColumns: "2fr 1fr" }}>
+            <Form.Group controlId="add-fantallenatore-name">
+              <Form.Label className="mb-1 small text-secondary">Nome</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Inserisci nome fantallenatore"
+                value={nameFantallenatore}
+                onChange={(e) => setNameFantallenatore(e.target.value)}
+                required
+                autoFocus
+                disabled={isCreating}
+              />
+            </Form.Group>
+            {numberField("add-fantallenatore-max-crediti", "Max crediti", maxCreditiFantallenatore, setMaxCreditiFantallenatore)}
+          </div>
+          <hr />
           {
             props.asta.type == "classic" ?
-              <>
-                <Form.Group controlId="classic_p" className="mb-3">
-                  <Form.Label>Numero Portieri</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero portieri"
-                    step={1}
-                    value={classicP}
-                    onChange={(e) => setClassicP(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group controlId="classic_d" className="mb-3">
-                  <Form.Label>Numero Difensori</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero difensori"
-                    step={1}
-                    value={classicD}
-                    onChange={(e) => setClassicD(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group controlId="classic_c" className="mb-3">
-                  <Form.Label>Numero Centrocampisti</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero centrocampisti"
-                    step={1}
-                    value={classicC}
-                    onChange={(e) => setClassicC(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group controlId="classic_a" className="mb-3">
-                  <Form.Label>Numero Attaccanti</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero attaccanti"
-                    step={1}
-                    value={classicA}
-                    onChange={(e) => setClassicA(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-              </>
+              <div className="d-grid gap-3" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
+                {numberField("classic_p", "Portieri", classicP, setClassicP)}
+                {numberField("classic_d", "Difensori", classicD, setClassicD)}
+                {numberField("classic_c", "Centrocampisti", classicC, setClassicC)}
+                {numberField("classic_a", "Attaccanti", classicA, setClassicA)}
+              </div>
               :
-              <>
-                <Form.Group controlId="mantra_por_min" className="mb-3">
-                  <Form.Label>Numero minimo Portieri</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero minimo portieri"
-                    step={1}
-                    value={mantraPorMin}
-                    onChange={(e) => setMantraPorMin(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group controlId="mantra_por_max" className="mb-3">
-                  <Form.Label>Numero massimo Portieri</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero massimo portieri"
-                    step={1}
-                    value={mantraPorMax}
-                    onChange={(e) => setMantraPorMax(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group controlId="mantra_mov_min" className="mb-3">
-                  <Form.Label>Numero minimo Giocatori Movimento</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero minimo giocatori movimento"
-                    step={1}
-                    value={mantraMovMin}
-                    onChange={(e) => setMantraMovMin(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group controlId="mantra_mov_max" className="mb-3">
-                  <Form.Label>Numero massimo Giocatori Movimento</Form.Label>
-                  <Form.Control
-                    type="number"
-                    placeholder="Inserisci numero massimo giocatori movimento"
-                    step={1}
-                    value={mantraMovMax}
-                    onChange={(e) => setMantraMovMax(Number(e.target.value))}
-                    required
-                  />
-                </Form.Group>
-              </>
+              <div className="d-grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                {numberField("mantra_por_min", "Portieri min", mantraPorMin, setMantraPorMin)}
+                {numberField("mantra_por_max", "Portieri max", mantraPorMax, setMantraPorMax)}
+                {numberField("mantra_mov_min", "Movimento min", mantraMovMin, setMantraMovMin)}
+                {numberField("mantra_mov_max", "Movimento max", mantraMovMax, setMantraMovMax)}
+              </div>
           }
-          <Button
-            variant="success"
-            type="submit"
-            disabled={isCreating}
-          >
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={props.onHide} disabled={isCreating}>
+            Annulla
+          </Button>
+          <Button variant="success" type="submit" disabled={isCreating}>
             {isCreating ? "Creando..." : "Crea Fantallenatore"}
           </Button>
-        </Form>
-      </Card.Body>
-    </Card>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 }
 

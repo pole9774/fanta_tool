@@ -4,7 +4,7 @@ class Player {
     name: string;
     team: string;
     role: string;
-    index_role: number;
+    index_role: number | null; // null = giocatore non classificato
     role_mantra: string;
     notes: string;
     taken: number;
@@ -15,7 +15,7 @@ class Player {
         name: string,
         team: string,
         role: string,
-        index_role: number,
+        index_role: number | null,
         role_mantra: string,
         notes: string,
         taken: number

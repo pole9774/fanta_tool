@@ -79,6 +79,51 @@ class AstaRoutes {
             }
         );
 
+        // Modifica nome e numero partecipanti di un'asta (il tipo non è modificabile)
+        this.router.patch(
+            "/:asta_id",
+            param("asta_id").isInt({ min: 1 }),
+            body("name").isString().trim().notEmpty(),
+            body("n_fantallenatori").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .updateAsta(
+                        parseInt(req.params.asta_id),
+                        req.body.name,
+                        parseInt(req.body.n_fantallenatori)
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Conteggi di un'asta (giocatori, fantallenatori, acquisti), mostrati prima dell'eliminazione
+        this.router.get(
+            "/:asta_id/counts",
+            param("asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .getAstaCounts(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Elimina un'asta con tutti i suoi giocatori, fantallenatori e acquisti
+        this.router.delete(
+            "/:asta_id",
+            param("asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .deleteAsta(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
         // Crea un giocatore
         this.router.post(
             "/:asta_id/players",
@@ -87,7 +132,7 @@ class AstaRoutes {
             body("team").notEmpty().isString(),
             body("role").notEmpty().isString(),
             body("role_mantra").notEmpty().isString(),
-            body("notes").notEmpty().isString(),
+            body("notes").isString(),
             body("taken").isInt(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
@@ -100,6 +145,55 @@ class AstaRoutes {
                         req.body.role_mantra,
                         req.body.notes,
                         req.body.taken
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Importa in blocco una lista di giocatori (es. da file Excel); con dry_run restituisce solo il riepilogo
+        this.router.post(
+            "/:asta_id/players/import",
+            param("asta_id").isInt({ min: 1 }),
+            body("players").isArray({ min: 1 }),
+            body("players.*.name").isString().notEmpty(),
+            body("players.*.team").isString().notEmpty(),
+            body("players.*.role_mantra").isString().notEmpty(),
+            body("players.*.roles").isArray({ min: 1, max: 3 }),
+            body("players.*.roles.*").isString().notEmpty(),
+            body("dry_run").optional().isBoolean({ strict: true }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .importPlayers(
+                        parseInt(req.params.asta_id),
+                        req.body.players,
+                        req.body.dry_run === true
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Scrive le statistiche di una stagione (es. da file Excel) nelle note dei giocatori che non hanno note;
+        // con dry_run restituisce solo il riepilogo
+        this.router.post(
+            "/:asta_id/players/notes/stats",
+            param("asta_id").isInt({ min: 1 }),
+            body("season").isIn(["2026-27", "2025-26", "2024-25"]),
+            body("stats").isArray({ min: 1 }),
+            body("stats.*.name").isString().notEmpty(),
+            body(["stats.*.pv", "stats.*.g", "stats.*.gs", "stats.*.a"]).isInt({ min: 0 }),
+            body(["stats.*.mv", "stats.*.fm"]).isFloat({ min: 0 }),
+            body("dry_run").optional().isBoolean({ strict: true }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .importStatsNotes(
+                        parseInt(req.params.asta_id),
+                        req.body.season,
+                        req.body.stats,
+                        req.body.dry_run === true
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
@@ -121,6 +215,25 @@ class AstaRoutes {
                         req.params.player_id,
                         req.body.role,
                         req.body.new_index_role,
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Sposta un giocatore (singola riga-ruolo) tra classificati e non classificati
+        this.router.patch(
+            "/:asta_id/players/:player_id/classification",
+            param("asta_id").isInt({ min: 1 }),
+            param("player_id").isInt({ min: 1 }),
+            body("classified").isBoolean({ strict: true }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .setPlayerClassified(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.player_id),
+                        req.body.classified === true
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
@@ -170,6 +283,64 @@ class AstaRoutes {
             (req: any, res: any, next: any) => {
                 this.controller
                     .getFantallenatori(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Modifica nome, crediti massimi e limiti per ruolo di un fantallenatore
+        this.router.patch(
+            "/:asta_id/fantallenatori/:fantallenatore_id",
+            param("asta_id").isInt({ min: 1 }),
+            param("fantallenatore_id").isInt({ min: 1 }),
+            body("name").notEmpty().isString(),
+            body("max_crediti").isInt({ min: 0 }),
+            body("classic_p").isInt({ min: 0 }),
+            body("classic_d").isInt({ min: 0 }),
+            body("classic_c").isInt({ min: 0 }),
+            body("classic_a").isInt({ min: 0 }),
+            body("mantra_por_min").isInt({ min: 0 }),
+            body("mantra_por_max").isInt({ min: 0 })
+                .custom((value, { req }) => Number(req.body.mantra_por_min) <= Number(value))
+                .withMessage("mantra_por_min must be <= mantra_por_max"),
+            body("mantra_mov_min").isInt({ min: 0 }),
+            body("mantra_mov_max").isInt({ min: 0 })
+                .custom((value, { req }) => Number(req.body.mantra_mov_min) <= Number(value))
+                .withMessage("mantra_mov_min must be <= mantra_mov_max"),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .updateFantallenatore(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.fantallenatore_id),
+                        req.body.name,
+                        parseInt(req.body.max_crediti),
+                        parseInt(req.body.classic_p),
+                        parseInt(req.body.classic_d),
+                        parseInt(req.body.classic_c),
+                        parseInt(req.body.classic_a),
+                        parseInt(req.body.mantra_por_min),
+                        parseInt(req.body.mantra_por_max),
+                        parseInt(req.body.mantra_mov_min),
+                        parseInt(req.body.mantra_mov_max)
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Elimina un fantallenatore (solo se non ha giocatori acquistati)
+        this.router.delete(
+            "/:asta_id/fantallenatori/:fantallenatore_id",
+            param("asta_id").isInt({ min: 1 }),
+            param("fantallenatore_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .deleteFantallenatore(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.fantallenatore_id)
+                    )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
             }
@@ -236,7 +407,7 @@ class AstaRoutes {
             param("asta_id").isInt({ min: 1 }),
             param("player_id").isInt({ min: 1 }),
             body("player_name").notEmpty().isString(),
-            body("notes").notEmpty().isString(),
+            body("notes").isString(),
             this.errorHandler.validateRequest,
             (req: any, res: any, next: any) => {
                 this.controller
@@ -264,23 +435,6 @@ class AstaRoutes {
                         parseInt(req.params.asta_id),
                         parseInt(req.params.taken_id),
                         req.body.taken_name
-                    )
-                    .then((data: any) => res.status(200).json(data))
-                    .catch((error: any) => next(error));
-            }
-        );
-
-        // importa giocatori da asta
-        this.router.post(
-            "/import-from-asta",
-            body("source_asta_id").isInt({ min: 1 }),
-            body("target_asta_id").isInt({ min: 1 }),
-            this.errorHandler.validateRequest,
-            (req: any, res: any, next: any) => {
-                this.controller
-                    .importPlayers(
-                        req.body.source_asta_id,
-                        req.body.target_asta_id
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
