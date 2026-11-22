@@ -79,6 +79,51 @@ class AstaRoutes {
             }
         );
 
+        // Modifica nome e numero partecipanti di un'asta (il tipo non è modificabile)
+        this.router.patch(
+            "/:asta_id",
+            param("asta_id").isInt({ min: 1 }),
+            body("name").isString().trim().notEmpty(),
+            body("n_fantallenatori").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .updateAsta(
+                        parseInt(req.params.asta_id),
+                        req.body.name,
+                        parseInt(req.body.n_fantallenatori)
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Conteggi di un'asta (giocatori, fantallenatori, acquisti), mostrati prima dell'eliminazione
+        this.router.get(
+            "/:asta_id/counts",
+            param("asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .getAstaCounts(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Elimina un'asta con tutti i suoi giocatori, fantallenatori e acquisti
+        this.router.delete(
+            "/:asta_id",
+            param("asta_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .deleteAsta(parseInt(req.params.asta_id))
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
         // Crea un giocatore
         this.router.post(
             "/:asta_id/players",

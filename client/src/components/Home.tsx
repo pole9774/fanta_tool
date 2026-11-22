@@ -5,6 +5,7 @@ import { showToast } from '../utilities/toast';
 import API from "../API/API";
 import Asta from "../entities/asta";
 import AstaTypeBadge from './AstaTypeBadge';
+import EditAstaForm from './EditAstaForm';
 
 function Home() {
 
@@ -15,6 +16,9 @@ function Home() {
   const [typeAsta, setTypeAsta] = useState<string>("classic");
   const [nFantallenatoriAsta, setNFantallenatoriAsta] = useState<number>(10);
   const [isCreating, setIsCreating] = useState<boolean>(false);
+
+  // Asta di cui è aperto il modal di modifica / eliminazione
+  const [editingAsta, setEditingAsta] = useState<Asta | null>(null);
 
   const [dirty, setDirty] = useState<boolean>(false);
 
@@ -83,7 +87,22 @@ function Home() {
                   <Card.Body className="d-flex flex-column gap-2">
                     <div className="d-flex align-items-start justify-content-between gap-2">
                       <Card.Title className="mb-0 fs-5">{asta.name}</Card.Title>
-                      <span className="text-secondary small">#{asta.id}</span>
+                      <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                        <span className="text-secondary small">#{asta.id}</span>
+                        {/* stopPropagation: il clic sulla matita non apre l'asta */}
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          className="icon-btn"
+                          title="Modifica asta"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingAsta(asta);
+                          }}
+                        >
+                          <i className="bi bi-pencil"></i>
+                        </Button>
+                      </div>
                     </div>
                     <div className="d-flex align-items-center gap-2 mt-auto">
                       <AstaTypeBadge type={asta.type} />
@@ -96,6 +115,18 @@ function Home() {
               </Col>
             ))}
           </Row>
+      }
+
+      {/* modifica / eliminazione asta */}
+      {
+        editingAsta ?
+          <EditAstaForm
+            key={editingAsta.id}
+            asta={editingAsta}
+            setDirty={setDirty}
+            onClose={() => setEditingAsta(null)}
+          />
+          : <></>
       }
 
       {/* creazione asta */}

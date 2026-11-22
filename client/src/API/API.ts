@@ -61,6 +61,40 @@ async function addAsta(name: string, type: string, n_fantallenatori: number) {
     return response;
 }
 
+// Modifica nome e numero partecipanti di un'asta
+async function updateAsta(asta_id: number, name: string, n_fantallenatori: number) {
+    const response = await fetch(baseURL + `asta/${asta_id}/`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, n_fantallenatori }),
+    });
+
+    return response;
+}
+
+// Quanti giocatori, fantallenatori e acquisti ha un'asta
+async function getAstaCounts(asta_id: number) {
+    const response = await fetch(baseURL + `asta/${asta_id}/counts/`);
+
+    if (response.ok) {
+        const counts: { players: number, fantallenatori: number, players_taken: number } = await response.json();
+        return counts;
+    } else {
+        throw new Error("Error. Please reload the page");
+    }
+}
+
+// Elimina un'asta con tutti i suoi giocatori, fantallenatori e acquisti
+async function deleteAsta(asta_id: number) {
+    const response = await fetch(baseURL + `asta/${asta_id}/`, {
+        method: "DELETE",
+    });
+
+    return response;
+}
+
 async function addPlayer(
     asta_id: number,
     name: string,
@@ -308,6 +342,9 @@ const API = {
     getAsta,
     getPlayers,
     addAsta,
+    updateAsta,
+    getAstaCounts,
+    deleteAsta,
     addPlayer,
     updatePlayerIndex,
     setPlayerClassified,

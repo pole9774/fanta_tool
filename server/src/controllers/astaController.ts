@@ -23,6 +23,18 @@ class AstaController {
         return this.astaDAO.createAsta(name, type, n_fantallenatori);
     }
 
+    async updateAsta(asta_id: number, name: string, n_fantallenatori: number) {
+        return this.astaDAO.updateAsta(asta_id, name, n_fantallenatori);
+    }
+
+    async getAstaCounts(asta_id: number) {
+        return this.astaDAO.getAstaCounts(asta_id);
+    }
+
+    async deleteAsta(asta_id: number) {
+        return this.astaDAO.deleteAsta(asta_id);
+    }
+
     async createPlayer(asta_id: number, name: string, team: string, role: string, role_mantra: string, notes: string, taken: number) {
         return this.astaDAO.createPlayer(asta_id, name, team, role, role_mantra, notes, taken);
     }

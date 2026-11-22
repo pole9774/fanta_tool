@@ -137,6 +137,93 @@ class AstaDAO {
         });
     }
 
+    // Modifica nome e numero partecipanti di un'asta (il tipo classic/mantra non è modificabile)
+    async updateAsta(asta_id: number, name: string, n_fantallenatori: number) {
+        return new Promise<any>((resolve, reject) => {
+            const sql = `UPDATE Aste SET name = ?, n_fantallenatori = ? WHERE id = ?`;
+
+            db.run(sql, [name, n_fantallenatori, asta_id], function (this: any, err: Error | null) {
+                if (err) {
+                    return reject(err);
+                }
+
+                if (this.changes === 0) {
+                    return reject(new Error("Asta not found"));
+                }
+
+                resolve({ asta_id, name, n_fantallenatori });
+            });
+        });
+    }
+
+    // Quanti giocatori (nomi distinti), fantallenatori e acquisti ha un'asta: mostrati prima dell'eliminazione
+    async getAstaCounts(asta_id: number) {
+        return new Promise<any>((resolve, reject) => {
+            const sql = `
+                SELECT
+                    (SELECT COUNT(DISTINCT name) FROM Players WHERE asta_id = ?) AS players,
+                    (SELECT COUNT(*) FROM Fantallenatori WHERE asta_id = ?) AS fantallenatori,
+                    (SELECT COUNT(*) FROM PlayersTaken WHERE asta_id = ?) AS players_taken
+            `;
+
+            db.get(sql, [asta_id, asta_id, asta_id], (err: Error | null, row: any) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                resolve({ asta_id, players: row.players, fantallenatori: row.fantallenatori, players_taken: row.players_taken });
+            });
+        });
+    }
+
+    // Elimina un'asta e, a cascata, i suoi acquisti, giocatori e fantallenatori (il DB non ha foreign key)
+    async deleteAsta(asta_id: number) {
+        return new Promise<any>((resolve, reject) => {
+            let firstError: Error | null = null;
+            const trackError = (err: Error | null) => {
+                if (err && !firstError) firstError = err;
+            };
+            const deleted = { players_taken: 0, players: 0, fantallenatori: 0, aste: 0 };
+
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION", trackError);
+
+                db.run("DELETE FROM PlayersTaken WHERE asta_id = ?", [asta_id], function (this: any, err: Error | null) {
+                    trackError(err);
+                    if (!err) deleted.players_taken = this.changes;
+                });
+                db.run("DELETE FROM Players WHERE asta_id = ?", [asta_id], function (this: any, err: Error | null) {
+                    trackError(err);
+                    if (!err) deleted.players = this.changes;
+                });
+                db.run("DELETE FROM Fantallenatori WHERE asta_id = ?", [asta_id], function (this: any, err: Error | null) {
+                    trackError(err);
+                    if (!err) deleted.fantallenatori = this.changes;
+                });
+                db.run("DELETE FROM Aste WHERE id = ?", [asta_id], function (this: any, err: Error | null) {
+                    trackError(err);
+                    if (!err) deleted.aste = this.changes;
+
+                    if (!firstError && deleted.aste === 0) {
+                        firstError = new Error("Asta not found");
+                    }
+
+                    if (firstError) {
+                        const error = firstError;
+                        return db.run("ROLLBACK", () => reject(error));
+                    }
+
+                    db.run("COMMIT", (commitErr: Error | null) => {
+                        if (commitErr) {
+                            return db.run("ROLLBACK", () => reject(commitErr));
+                        }
+                        resolve({ asta_id, deleted });
+                    });
+                });
+            });
+        });
+    }
+
     // I nuovi giocatori nascono non classificati (index_role NULL)
     async createPlayer(asta_id: number, name: string, team: string, role: string, role_mantra: string, notes: string, taken: number) {
         return new Promise<any>((resolve, reject) => {
