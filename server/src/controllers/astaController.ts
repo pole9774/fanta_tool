@@ -43,6 +43,15 @@ class AstaController {
         return this.astaDAO.importPlayers(asta_id, players, dry_run);
     }
 
+    async importStatsNotes(
+        asta_id: number,
+        season: string,
+        stats: { name: string, pv: number, mv: number, fm: number, g: number, gs: number, a: number }[],
+        dry_run: boolean
+    ) {
+        return this.astaDAO.importStatsNotes(asta_id, season, stats, dry_run);
+    }
+
     async createFantallenatore(
         asta_id: number,
         name: string,
@@ -74,6 +83,10 @@ class AstaController {
         mantra_mov_max: number
     ) {
         return this.astaDAO.updateFantallenatore(asta_id, fantallenatore_id, name, max_crediti, classic_p, classic_d, classic_c, classic_a, mantra_por_min, mantra_por_max, mantra_mov_min, mantra_mov_max);
+    }
+
+    async deleteFantallenatore(asta_id: number, fantallenatore_id: number) {
+        return this.astaDAO.deleteFantallenatore(asta_id, fantallenatore_id);
     }
 
     async getFantallenatori(asta_id: number) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import { showToast } from '../utilities/toast';
 import API from "../API/API";
 import Fantallenatore from '../entities/fantallenatore';
@@ -9,11 +9,14 @@ interface EditFantallenatoreFormProps {
   asta: Asta;
   asta_id: string | number;
   fantallenatore: Fantallenatore;
+  // giocatori acquistati dal fantallenatore: se > 0 non può essere eliminato
+  nPlayersTaken: number;
   setDirty: (dirty: boolean) => void;
   onClose: () => void;
 }
 
-// Form compatto (dentro la card del fantallenatore in TakenPage) per modificare nome, crediti massimi e limiti per ruolo
+// Modal (aperto da TakenPage) per modificare nome, crediti massimi e limiti per ruolo di un fantallenatore,
+// o per eliminarlo se non ha ancora acquistato giocatori
 function EditFantallenatoreForm(props: EditFantallenatoreFormProps) {
 
   const f: Fantallenatore = props.fantallenatore;
@@ -30,6 +33,33 @@ function EditFantallenatoreForm(props: EditFantallenatoreFormProps) {
   const [mantraMovMax, setMantraMovMax] = useState<number>(f.mantra_mov_max);
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  const canDelete = props.nPlayersTaken == 0;
+
+  const handleDelete = async () => {
+    if (!canDelete) return;
+    const confirmed = window.confirm(`Eliminare il fantallenatore ${f.name}?`);
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await API.deleteFantallenatore(Number(props.asta_id), f.id);
+
+      if (response && response.ok) {
+        showToast.success("Fantallenatore deleted successfully");
+        props.setDirty(true);
+        props.onClose();
+      } else {
+        showToast.error("Failed to delete the Fantallenatore");
+      }
+    } catch {
+      showToast.error("Failed to delete the Fantallenatore");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleSave = async () => {
     if (name.trim() == "") {
@@ -72,12 +102,16 @@ function EditFantallenatoreForm(props: EditFantallenatoreFormProps) {
     }
   };
 
-  // Campo numerico piccolo con etichetta corta, per le griglie 2x2
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleSave();
+  };
+
+  // Campo numerico con etichetta corta, per le griglie 2x2
   const numberField = (id: string, label: string, value: number, setValue: (v: number) => void) => (
-    <Form.Group controlId={`edit-${id}-${f.id}`} className="mb-1">
-      <Form.Label className="mb-0 small text-muted">{label}</Form.Label>
+    <Form.Group controlId={`edit-${id}-${f.id}`}>
+      <Form.Label className="mb-1 small text-secondary">{label}</Form.Label>
       <Form.Control
-        size="sm"
         type="number"
         min={0}
         step={1}
@@ -88,51 +122,68 @@ function EditFantallenatoreForm(props: EditFantallenatoreFormProps) {
   );
 
   return (
-    <div className="mt-3 px-1">
-      <Form.Group controlId={`edit-name-${f.id}`} className="mb-1">
-        <Form.Label className="mb-0 small text-muted">Nome</Form.Label>
-        <Form.Control
-          size="sm"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </Form.Group>
-      {numberField("max-crediti", "Max crediti", maxCrediti, setMaxCrediti)}
-      {
-        props.asta.type == "classic" ?
-          <div className="d-grid gap-1" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            {numberField("classic-p", "P", classicP, setClassicP)}
-            {numberField("classic-d", "D", classicD, setClassicD)}
-            {numberField("classic-c", "C", classicC, setClassicC)}
-            {numberField("classic-a", "A", classicA, setClassicA)}
+    <Modal show onHide={props.onClose} centered>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Header closeButton>
+          <Modal.Title>Modifica fantallenatore</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-grid gap-3" style={{ gridTemplateColumns: "2fr 1fr" }}>
+            <Form.Group controlId={`edit-name-${f.id}`}>
+              <Form.Label className="mb-1 small text-secondary">Nome</Form.Label>
+              <Form.Control
+                type="text"
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Form.Group>
+            {numberField("max-crediti", "Max crediti", maxCrediti, setMaxCrediti)}
           </div>
-          :
-          <div className="d-grid gap-1" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            {numberField("mantra-por-min", "P min", mantraPorMin, setMantraPorMin)}
-            {numberField("mantra-por-max", "P max", mantraPorMax, setMantraPorMax)}
-            {numberField("mantra-mov-min", "Mov min", mantraMovMin, setMantraMovMin)}
-            {numberField("mantra-mov-max", "Mov max", mantraMovMax, setMantraMovMax)}
-          </div>
-      }
-      <div className="d-flex flex-row gap-1 justify-content-end mt-1">
-        <Button
-          variant="success"
-          size="sm"
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? "..." : "✓"}
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={props.onClose}
-        >
-          ✕
-        </Button>
-      </div>
-    </div>
+          <hr />
+          {
+            props.asta.type == "classic" ?
+              <div className="d-grid gap-3" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
+                {numberField("classic-p", "Portieri", classicP, setClassicP)}
+                {numberField("classic-d", "Difensori", classicD, setClassicD)}
+                {numberField("classic-c", "Centrocampisti", classicC, setClassicC)}
+                {numberField("classic-a", "Attaccanti", classicA, setClassicA)}
+              </div>
+              :
+              <div className="d-grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                {numberField("mantra-por-min", "Portieri min", mantraPorMin, setMantraPorMin)}
+                {numberField("mantra-por-max", "Portieri max", mantraPorMax, setMantraPorMax)}
+                {numberField("mantra-mov-min", "Movimento min", mantraMovMin, setMantraMovMin)}
+                {numberField("mantra-mov-max", "Movimento max", mantraMovMax, setMantraMovMax)}
+              </div>
+          }
+          {
+            !canDelete ?
+              <p className="small text-secondary mt-3 mb-0">
+                Ha {props.nPlayersTaken} giocatori acquistati: non può essere eliminato.
+              </p>
+              : <></>
+          }
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="outline-danger"
+            className="me-auto"
+            onClick={handleDelete}
+            disabled={!canDelete || isDeleting || isSaving}
+            title={canDelete ? "Elimina fantallenatore" : "Non eliminabile: ha giocatori acquistati"}
+          >
+            <i className="bi bi-trash me-1"></i>{isDeleting ? "Eliminando..." : "Elimina"}
+          </Button>
+          <Button variant="secondary" onClick={props.onClose} disabled={isSaving}>
+            Annulla
+          </Button>
+          <Button variant="success" type="submit" disabled={isSaving}>
+            {isSaving ? "Salvando..." : "Salva"}
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 }
 

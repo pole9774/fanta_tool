@@ -1,0 +1,214 @@
+/* Ritocchi al tema scuro di Bootstrap (caricato prima di questo file in main.tsx) */
+
+[data-bs-theme=dark] {
+  --bs-body-bg: #14171b;
+  --bs-body-color: #e3e6ea;
+  --bs-secondary-color: #9aa3ad;
+  --bs-border-color: #2b3138;
+  --bs-tertiary-bg: #1b1f24;
+
+  --app-surface: #1c2026;
+  --app-surface-hover: #232830;
+  --app-surface-muted: #181b20;
+  --app-border: #2b3138;
+  --app-accent: #4f9cf9;
+}
+
+body {
+  background-color: var(--bs-body-bg);
+}
+
+.card {
+  --bs-card-bg: var(--app-surface);
+  --bs-card-border-color: var(--app-border);
+}
+
+.modal {
+  --bs-modal-bg: var(--app-surface);
+  --bs-modal-border-color: var(--app-border);
+}
+
+/* Navbar */
+.app-navbar {
+  background-color: #0f1215;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-navbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Badge ruolo (pallino / pill) */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 3px;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Home: card delle aste */
+.asta-card {
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s, transform 0.12s;
+}
+
+.asta-card:hover {
+  background-color: var(--app-surface-hover);
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+
+/* Blocco sticky in cima alla vista Giocatori (riepilogo + toolbar) */
+.sticky-panel {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--bs-body-bg);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--app-border);
+}
+
+/* Riepilogo fantallenatori */
+.summary-chip {
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+.summary-chip .credits {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.max-bid {
+  color: #f5c35b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Righe della lista giocatori */
+.player-row {
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  margin-bottom: 0.3rem;
+}
+
+.player-row:hover {
+  background-color: var(--app-surface-hover);
+}
+
+.player-row.taken {
+  background-color: var(--app-surface-muted);
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  margin-bottom: 0.15rem;
+  opacity: 0.55;
+}
+
+.player-row.taken:hover {
+  opacity: 0.85;
+}
+
+.player-row .rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  border-radius: 0.35rem;
+  background-color: #2d333b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #c9d1d9;
+}
+
+.player-row .drag-handle {
+  cursor: grab;
+  color: var(--bs-secondary-color);
+  font-size: 1.1rem;
+  padding: 0 2px;
+}
+
+.player-row .drag-handle:hover {
+  color: var(--bs-body-color);
+}
+
+.player-row .notes {
+  color: var(--bs-secondary-color);
+  white-space: pre-wrap;
+  cursor: pointer;
+}
+
+.player-row .notes.clamped,
+.player-row .notes.clamped-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* giocatori presi: note su una sola riga */
+.player-row .notes.clamped-1 {
+  -webkit-line-clamp: 1;
+}
+
+.owner-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  background-color: #2d333b;
+  color: #e3e6ea;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  white-space: nowrap;
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0.6rem;
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.section-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--app-border);
+}
+
+/* Vista Acquisti */
+.taken-column-header {
+  cursor: pointer;
+  border-radius: 0.4rem;
+  padding: 0.25rem;
+  transition: background-color 0.12s;
+}
+
+.taken-column-header:hover {
+  background-color: var(--app-surface-hover);
+}
+
+.taken-row {
+  border-top: 1px solid var(--app-border);
+  padding: 0.2rem 0.15rem;
+}
+
+.icon-btn {
+  line-height: 1;
+}

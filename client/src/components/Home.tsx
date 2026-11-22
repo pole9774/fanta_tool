@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Button, Form, Container, Row, Col, Card, ListGroup } from "react-bootstrap";
+import { Button, Form, Container, Row, Col, Card, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { showToast } from '../utilities/toast';
 import API from "../API/API";
 import Asta from "../entities/asta";
+import AstaTypeBadge from './AstaTypeBadge';
 
-function Home(props: any) {
+function Home() {
 
   const [aste, setAste] = useState<Asta[]>([]);
 
+  const [showCreate, setShowCreate] = useState<boolean>(false);
   const [nameAsta, setNameAsta] = useState<string>("");
   const [typeAsta, setTypeAsta] = useState<string>("classic");
   const [nFantallenatoriAsta, setNFantallenatoriAsta] = useState<number>(10);
@@ -17,6 +19,12 @@ function Home(props: any) {
   const [dirty, setDirty] = useState<boolean>(false);
 
   const navigate = useNavigate();
+
+  const closeCreate = () => {
+    setShowCreate(false);
+    setNameAsta("");
+    setTypeAsta("classic");
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -27,13 +35,12 @@ function Home(props: any) {
 
       if (response && response.ok) {
         showToast.success("Asta created successfully");
-        setNameAsta("");
-        setTypeAsta("classic");
+        closeCreate();
         setDirty(true);
       } else {
         showToast.error("Failed to create the Asta");
       }
-    } catch (error) {
+    } catch {
       showToast.error("Failed to create the Asta");
     } finally {
       setIsCreating(false);
@@ -46,7 +53,7 @@ function Home(props: any) {
         const aste = await API.getAste();
         setAste(aste);
         setDirty(false);
-      } catch (error) {
+      } catch {
         showToast.error('Failed to load the Aste');
       }
     };
@@ -55,33 +62,49 @@ function Home(props: any) {
   }, [dirty]);
 
   return (
-    <Container fluid className="my-5 px-5">
+    <Container fluid className="my-4 px-4">
 
-      {/* selezione asta */}
-      <div className="mb-5">
-        <ListGroup className="mb-3">
-          {aste.map((asta) => (
-            <ListGroup.Item
-              key={asta.id}
-              action
-              onClick={() => navigate(`/asta/${asta.id}`)}
-              className="d-flex flex-wrap gap-2"
-            >
-              <strong>{asta.id}</strong>
-              <span>{asta.name}</span>
-              <span>{"("}{asta.type}, {asta.n_fantallenatori}{")"}</span>
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <h4 className="mb-0">Le tue aste</h4>
+        <Button variant="primary" onClick={() => setShowCreate(true)}>
+          <i className="bi bi-plus-lg me-1"></i>Nuova asta
+        </Button>
       </div>
 
+      {/* selezione asta */}
+      {
+        aste.length == 0 ?
+          <p className="text-secondary">Nessuna asta. Creane una con "Nuova asta".</p>
+          :
+          <Row xs={1} sm={2} lg={3} xxl={4} className="g-3">
+            {aste.map((asta) => (
+              <Col key={asta.id}>
+                <Card className="asta-card h-100" onClick={() => navigate(`/asta/${asta.id}`)}>
+                  <Card.Body className="d-flex flex-column gap-2">
+                    <div className="d-flex align-items-start justify-content-between gap-2">
+                      <Card.Title className="mb-0 fs-5">{asta.name}</Card.Title>
+                      <span className="text-secondary small">#{asta.id}</span>
+                    </div>
+                    <div className="d-flex align-items-center gap-2 mt-auto">
+                      <AstaTypeBadge type={asta.type} />
+                      <span className="text-secondary small">
+                        <i className="bi bi-people-fill me-1"></i>{asta.n_fantallenatori} partecipanti
+                      </span>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+      }
+
       {/* creazione asta */}
-      <Card>
-        <Card.Header as="h5" className="bg-primary text-white">
-          Aggiungi Asta
-        </Card.Header>
-        <Card.Body>
-          <Form onSubmit={handleSubmit}>
+      <Modal show={showCreate} onHide={closeCreate} centered>
+        <Form onSubmit={handleSubmit}>
+          <Modal.Header closeButton>
+            <Modal.Title>Nuova asta</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
             <Form.Group controlId="name" className="mb-3">
               <Form.Label>Nome</Form.Label>
               <Form.Control
@@ -90,12 +113,14 @@ function Home(props: any) {
                 value={nameAsta}
                 onChange={(e) => setNameAsta(e.target.value)}
                 required
+                autoFocus
                 disabled={isCreating}
               />
             </Form.Group>
             <Form.Group controlId="type" className="mb-3">
-              <Form.Label>Formato</Form.Label>
+              <Form.Label className="d-block">Formato</Form.Label>
               <Form.Check
+                inline
                 type="radio"
                 name="typeAsta"
                 id="classic"
@@ -106,6 +131,7 @@ function Home(props: any) {
                 required
               />
               <Form.Check
+                inline
                 type="radio"
                 name="typeAsta"
                 id="mantra"
@@ -116,7 +142,7 @@ function Home(props: any) {
                 required
               />
             </Form.Group>
-            <Form.Group controlId="n_fantallenatori" className="mb-3">
+            <Form.Group controlId="n_fantallenatori">
               <Form.Label>N. Fantallenatori</Form.Label>
               <Form.Control
                 type="number"
@@ -127,16 +153,17 @@ function Home(props: any) {
                 required
               />
             </Form.Group>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={isCreating}
-            >
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeCreate} disabled={isCreating}>
+              Annulla
+            </Button>
+            <Button variant="primary" type="submit" disabled={isCreating}>
               {isCreating ? "Creando..." : "Crea Asta"}
             </Button>
-          </Form>
-        </Card.Body>
-      </Card>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </Container>
   );
 }

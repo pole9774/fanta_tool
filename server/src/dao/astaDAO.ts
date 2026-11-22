@@ -282,6 +282,37 @@ class AstaDAO {
         });
     }
 
+    // Elimina un fantallenatore solo se non ha giocatori acquistati (controllo e cancellazione in un'unica istruzione)
+    async deleteFantallenatore(asta_id: number, fantallenatore_id: number) {
+        return new Promise<any>((resolve, reject) => {
+            const delete_sql = `
+                DELETE FROM Fantallenatori
+                WHERE id = ? AND asta_id = ?
+                    AND NOT EXISTS (SELECT 1 FROM PlayersTaken WHERE fantallenatore_id = ?)
+            `;
+
+            db.run(delete_sql, [fantallenatore_id, asta_id, fantallenatore_id], function (this: any, err: Error | null) {
+                if (err) {
+                    return reject(err);
+                }
+
+                if (this.changes > 0) {
+                    return resolve({ asta_id, fantallenatore_id });
+                }
+
+                // nessuna riga eliminata: il fantallenatore non esiste oppure ha giocatori acquistati
+                db.get(
+                    "SELECT id FROM Fantallenatori WHERE id = ? AND asta_id = ?",
+                    [fantallenatore_id, asta_id],
+                    (selectErr: Error | null, row: any) => {
+                        if (selectErr) return reject(selectErr);
+                        reject(new Error(row ? "Fantallenatore has players taken" : "Fantallenatore not found"));
+                    }
+                );
+            });
+        });
+    }
+
     async getFantallenatori(asta_id: number) {
         return new Promise<any[]>((resolve, reject) => {
             const sql = `
@@ -642,6 +673,120 @@ class AstaDAO {
                                 return db.run("ROLLBACK", () => reject(commitErr));
                             }
                             resolve({ dry_run, to_import: toImport.length, imported: toImport.length, rows_inserted: rowsInserted, skipped });
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+    // Scrive le statistiche di una stagione nelle note dei giocatori che non hanno ancora note (vuote o solo spazi).
+    // Abbinamento per nome; il portiere si riconosce da una riga con role = 'P' nell'asta.
+    // Con dry_run calcola solo il riepilogo (con qualche esempio di nota) senza scrivere.
+    async importStatsNotes(
+        asta_id: number,
+        season: string,
+        stats: { name: string, pv: number, mv: number, fm: number, g: number, gs: number, a: number }[],
+        dry_run: boolean
+    ) {
+        return new Promise<any>((resolve, reject) => {
+            const summary_sql = `
+                SELECT name,
+                    MAX(CASE WHEN role = 'P' THEN 1 ELSE 0 END) AS is_gk,
+                    MAX(CASE WHEN notes IS NULL OR TRIM(notes) = '' THEN 1 ELSE 0 END) AS empty_notes
+                FROM Players
+                WHERE asta_id = ?
+                GROUP BY name
+            `;
+
+            db.all(summary_sql, [asta_id], (err: Error | null, rows: any[]) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                const statsByName = new Map<string, typeof stats[number]>();
+                for (const s of stats) {
+                    statsByName.set(s.name.trim(), s);
+                }
+
+                const astaNames = new Set<string>(rows.map((row) => row.name));
+                const toUpdate: { name: string, notes: string }[] = [];
+                let skippedWithNotes = 0;
+                let notInFile = 0;
+
+                for (const row of rows) {
+                    const s = statsByName.get(row.name);
+                    if (!s) {
+                        notInFile++;
+                    } else if (row.empty_notes != 1) {
+                        skippedWithNotes++;
+                    } else {
+                        const tail = `- ${Number(s.mv).toFixed(2)}mv ${Number(s.fm).toFixed(2)}fm`;
+                        const notes = row.is_gk == 1
+                            ? `Stagione ${season}: ${s.pv}pv ${s.gs}gs ${tail}`
+                            : `Stagione ${season}: ${s.pv}pv ${s.g}g ${s.a}a ${tail}`;
+                        toUpdate.push({ name: row.name, notes });
+                    }
+                }
+
+                const fileNotInAsta = [...statsByName.keys()].filter((name) => !astaNames.has(name)).length;
+
+                const result = {
+                    dry_run,
+                    season,
+                    to_update: toUpdate.length,
+                    skipped_with_notes: skippedWithNotes,
+                    not_in_file: notInFile,
+                    file_not_in_asta: fileNotInAsta,
+                    examples: toUpdate.slice(0, 3),
+                    updated: 0,
+                    rows_updated: 0,
+                };
+
+                if (dry_run || toUpdate.length == 0) {
+                    return resolve(result);
+                }
+
+                // la condizione sulle note vuote è ripetuta: una nota scritta nel frattempo non viene sovrascritta
+                const update_sql = `
+                    UPDATE Players SET notes = ?
+                    WHERE asta_id = ? AND name = ? AND (notes IS NULL OR TRIM(notes) = '')
+                `;
+
+                let firstError: Error | null = null;
+                const trackError = (err: Error | null) => {
+                    if (err && !firstError) firstError = err;
+                };
+                let updated = 0;
+                let rowsUpdated = 0;
+
+                db.serialize(() => {
+                    db.run("BEGIN TRANSACTION", trackError);
+
+                    const stmt = db.prepare(update_sql, trackError);
+                    for (const player of toUpdate) {
+                        stmt.run([player.notes, asta_id, player.name], function (this: any, err: Error | null) {
+                            trackError(err);
+                            if (!err && this.changes > 0) {
+                                updated++;
+                                rowsUpdated += this.changes;
+                            }
+                        });
+                    }
+
+                    stmt.finalize((err: Error | null) => {
+                        trackError(err);
+
+                        if (firstError) {
+                            const error = firstError;
+                            return db.run("ROLLBACK", () => reject(error));
+                        }
+
+                        db.run("COMMIT", (commitErr: Error | null) => {
+                            if (commitErr) {
+                                return db.run("ROLLBACK", () => reject(commitErr));
+                            }
+                            resolve({ ...result, updated, rows_updated: rowsUpdated });
                         });
                     });
                 });

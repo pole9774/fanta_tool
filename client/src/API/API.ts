@@ -3,6 +3,7 @@ import Player from "../entities/player";
 import Fantallenatore from "../entities/fantallenatore";
 import PlayerTaken from "../entities/playerTaken";
 import type { ImportedPlayer } from "../utilities/excelPlayers";
+import type { PlayerStats } from "../utilities/excelStats";
 
 const baseURL = "http://localhost:3001/api/";
 
@@ -173,6 +174,15 @@ async function updateFantallenatore(
     return response;
 }
 
+// Elimina un fantallenatore; il server rifiuta se ha giocatori acquistati
+async function deleteFantallenatore(asta_id: number, fantallenatore_id: number) {
+    const response = await fetch(baseURL + `asta/${asta_id}/fantallenatori/${fantallenatore_id}/`, {
+        method: "DELETE",
+    });
+
+    return response;
+}
+
 async function getFantallenatori(asta_id: number) {
     const response = await fetch(baseURL + `asta/${asta_id}/fantallenatori/`);
 
@@ -280,6 +290,19 @@ async function importPlayers(asta_id: number, players: ImportedPlayer[], dry_run
     return response;
 }
 
+// Statistiche di una stagione nelle note dei giocatori senza note. dry_run = true: solo riepilogo, nessuna scrittura
+async function importStatsNotes(asta_id: number, season: string, stats: PlayerStats[], dry_run: boolean) {
+    const response = await fetch(baseURL + `asta/${asta_id}/players/notes/stats/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ season, stats, dry_run }),
+    });
+
+    return response;
+}
+
 const API = {
     getAste,
     getAsta,
@@ -290,6 +313,7 @@ const API = {
     setPlayerClassified,
     addFantallenatore,
     updateFantallenatore,
+    deleteFantallenatore,
     getFantallenatori,
     assignPlayer,
     getPlayersTaken,
@@ -297,7 +321,8 @@ const API = {
     updateNotes,
     cancelAssign,
     deletePlayer,
-    importPlayers
+    importPlayers,
+    importStatsNotes
 };
 
 export default API;

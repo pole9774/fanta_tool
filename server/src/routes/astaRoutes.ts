@@ -130,6 +130,31 @@ class AstaRoutes {
             }
         );
 
+        // Scrive le statistiche di una stagione (es. da file Excel) nelle note dei giocatori che non hanno note;
+        // con dry_run restituisce solo il riepilogo
+        this.router.post(
+            "/:asta_id/players/notes/stats",
+            param("asta_id").isInt({ min: 1 }),
+            body("season").isIn(["2026-27", "2025-26", "2024-25"]),
+            body("stats").isArray({ min: 1 }),
+            body("stats.*.name").isString().notEmpty(),
+            body(["stats.*.pv", "stats.*.g", "stats.*.gs", "stats.*.a"]).isInt({ min: 0 }),
+            body(["stats.*.mv", "stats.*.fm"]).isFloat({ min: 0 }),
+            body("dry_run").optional().isBoolean({ strict: true }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .importStatsNotes(
+                        parseInt(req.params.asta_id),
+                        req.body.season,
+                        req.body.stats,
+                        req.body.dry_run === true
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
         // Aggiorna index_role di un giocatore
         this.router.patch(
             "/:asta_id/players/:player_id",
@@ -253,6 +278,23 @@ class AstaRoutes {
                         parseInt(req.body.mantra_por_max),
                         parseInt(req.body.mantra_mov_min),
                         parseInt(req.body.mantra_mov_max)
+                    )
+                    .then((data: any) => res.status(200).json(data))
+                    .catch((error: any) => next(error));
+            }
+        );
+
+        // Elimina un fantallenatore (solo se non ha giocatori acquistati)
+        this.router.delete(
+            "/:asta_id/fantallenatori/:fantallenatore_id",
+            param("asta_id").isInt({ min: 1 }),
+            param("fantallenatore_id").isInt({ min: 1 }),
+            this.errorHandler.validateRequest,
+            (req: any, res: any, next: any) => {
+                this.controller
+                    .deleteFantallenatore(
+                        parseInt(req.params.asta_id),
+                        parseInt(req.params.fantallenatore_id)
                     )
                     .then((data: any) => res.status(200).json(data))
                     .catch((error: any) => next(error));
